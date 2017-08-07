@@ -1,43 +1,77 @@
-####目录
-- 数据属性和访问器属性
-- 类数组对象
-- let
-#### 数据属性和访问器Accessor属性
+## 继承
 
-数据属性:[[configurable]],[[enumerable]],[[writable]],[[value]]
-访问器属性:[[configurable]],[[enumerable]],[[get]],[[set]]
+```js
+var a = {
+  x: 10,
+  calculate: function (z) {
+    return this.x + this.y + z;
+  },
+};
 
-	<h1 id="name">some text</h1>
-	
-	var person = {
-		_age: 18,
-		name: 'john'
-	}
-	Object.defineProperty(person, 'age', {
-		get: function () {
-			return document.getElementById('name').innerHTML;
-		},
-		set: function (newValue) {
-			this._age = newValue;
-			this.name += newValue;
-			document.getElementById('name').innerHTML = newValue;
-		}
-		// enumerable: true,
-  		// configurable: true
-	})
+// 原型
+var b = {
+  y: 20,
+  __proto__: a,
+};
 
-注：属性后括号中表示默认值
-***configurable***(false) :设置为 false，表示不能从对象中删除属性，如果对这个属性调用 delete，则在非严格模式下什么都不会发生，严格模式下报错,同时对象的value、writable、enumerable属性都无法修改（TypeError: Cannot redefine property）．需要注意的是全局声明变量时,对象的configurable为true
-**enumerable**(true ???):存放一个布尔值，表示该属性是否可枚举，如果设为 false，会使得某些操作（比如 for-in 循环、Object.keys() 以及 **JSON.stringify**会跳过该属性）
+var c = {
+  y: 30,
+  __proto__: a,
+};
 
-#### 类数组对象
+//　拼接
+var b = Object.assign({}, a, {
+  y: 20,
+});
+
+var c = Object.assign({}, a, {
+  y: 30,
+});
+
+b.calculate(30); //60
+c.calculate(40); //80
 ```
+## 数据属性和访问器Accessor属性
+```js
+// 数据属性
+[[configurable]],
+[[enumerable]],//for-in,Object.keys(),JSON.stringify()
+[[writable]],
+[[value]]
+// 访问器属性
+[[configurable]],
+[[enumerable]],
+[[get]],
+[[set]]
+```
+```js
+<h1 id="name">some text</h1>
+
+var person = {
+  _age: 18,
+  name: 'john'
+};
+
+Object.defineProperty(person, 'age', {
+  get: function () {
+    return document.getElementById('name').innerHTML;
+  },
+  set: function (newValue) {
+    this._age = newValue;
+    this.name += newValue;
+    document.getElementById('name').innerHTML = newValue;
+  },
+});
+```
+
+## 类数组对象
+```js
 // 只存在整数属性的对象不存在length属性, 不为类数组对象
 var a = { '1': 2 };
 
 Array.prototype.slice.call(arguments);
 ```
-#### let
+## let
 ```
 // let声明不会被提升到当前执行上下文的顶部
 // 变量从块作用域开始到let初始化位于"暂时性死区"中(switch语句只存在一个作用块)
@@ -56,7 +90,7 @@ let foo = 1;
 var foo = 2; // SyntaxError
 ```
 
-#### ES2015+
+## ES2015+
 ```
 // stage3
 var obj1 = { foo: 'bar', x: 42 };
