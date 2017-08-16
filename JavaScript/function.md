@@ -32,7 +32,9 @@ function Person (name, age) {
   return obj;
 }
 var p = Person('L', 18);
+
 console.assert(!(p instanceof Person));
+console.assert(p.constructor === Object);
 ```
 
 ```js
@@ -43,6 +45,10 @@ function Person (name, age) {
 }
 
 var p = new Person('L', 18);
+
+// 对象的__proto__属性指向对象constructor属性的原型
+console.assert(Object.constructor === Function);
+console.assert(Function.constructor === Function);
 
 console.assert(p.constructor === Person);
 
@@ -55,6 +61,7 @@ console.assert(Person.prototype.__proto__ === Object.prototype);
 console.assert(Object.prototype.__proto__ === null);
 
 console.assert(Person.__proto__ === Function.prototype);
+console.assert(Object.__proto__ === Function.prototype);
 console.assert(Function.prototype.__proto__ === Object.prototype);
 ```
 
