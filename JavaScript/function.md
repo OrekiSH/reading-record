@@ -1,3 +1,60 @@
+## call stack
+JavaScript是单线程的编程语言，运行时(Runtime)是单线程的，所以只有一个call stack
+
+```js
+function multiply (a, b) {
+  return a * b;
+}
+
+function square (n) {
+  return multiply(n, n);
+}
+
+function printSquare (n) {
+  var squared = square(n);
+  console.log(squared);
+}
+
+printSquare(4);
+
+/**
+---------------------------------------------
+multiply(n, n) // get return statement pop->
+---------------------------------------------
+square(n)
+---------------------------------------------
+printSquare(4)
+---------------------------------------------
+main()
+---------------------------------------------
+
+-------------------------------------------
+console.log(squared) // end of the function
+-------------------------------------------
+printSquare(4)
+-------------------------------------------
+main()
+-------------------------------------------
+*/
+```
+## scope
+JavaScript采用的是词法作用域(Lexical Scope)模型
+
+```js
+function foo() {
+  console.log(a);
+}
+
+function bar() {
+  var a = 2;
+  foo();
+}
+
+var a = 1;
+
+bar();
+```
+
 ## strict mode
 *IE在IE10引入
 
