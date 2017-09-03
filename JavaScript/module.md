@@ -1,5 +1,5 @@
-### 前端模块化开发的价值
-```
+## 前端模块化开发的价值
+```js
 // 命名冲突
 function func () {}
 function func () {}
@@ -13,10 +13,9 @@ org.cometd.Utils.func = function () {}
 // 文件依赖
 dialog.js依赖于utils.js,但是utils.js未引入.
 ```
----
 
-### AMD
-```
+## AMD
+```js
 define(id?, dependencies?, factory);
 ```
 依赖参数是可选的，如果忽略此参数，它应该默认为["require", "exports", "module"].无论函数体中是否用到了`require`,模块 factory 构造方法的第一个参数必须命名,且必须为`require`.
@@ -26,43 +25,41 @@ define(id?, dependencies?, factory);
 // 模块系统的启动
 require(['./mod'], function (mod) { });
 
+// load jQuery
 require.config({
-	paths: {
-	  jquery: 'https://cdn.bootcss.com/jquery/3.2.1/jquery',
-	},
+  paths: {
+    jquery: 'https://cdn.bootcss.com/jquery/3.2.1/jquery',
+    // jquery: '../node_modules/jquery/dist/jquery',
+  },
 });
+require(['jquery'], function ($) { });
 
-require(['jquery', './main'], function ($, main) { });
-
-require(['scripts/config'], function() {
+// config in config.js without any exports
+require(['./config'], function() {
     // Configuration loaded now, safe to do other require calls that depend on that config.
-    require(['foo'], function(foo) { });
+    require(['jquery'], function($) { });
 });
 ```
 
-```
-// 正确写法1
+```js
  exports.action = function () { }
- // 正确写法2
  return {
- 	action: function () { }
+   action: function () { }
  }
- // 正确写法3
  module.exports = {
- 	action: function () { }
+   action: function () { }
  }
- // 正确写法4
  define({
- 	action: function () { }
+   action: function () { }
  })
- 
- // 错误写法
+
+ // wrong
  exports = {
- 	action: function () { }
+   action: function () { }
  }
 ```
----
-### CMD
+
+## CMD
 ```
 define(factory);
 // define(id?, dependencies?, factory);
@@ -70,7 +67,7 @@ define(factory);
 无论函数体中是否用到了`require`,模块 factory 构造方法的第一个参数必须命名,且必须为`require`.
 
 `require`的参数值必须是字符串直接量
-```
+```js
 // 模块系统的启动
 seajs.use('./path/mod', function (mod) { });
 
@@ -87,9 +84,8 @@ seajs.config({
 	},
 })
 seajs.use('./main');
-
 ```
-```
+```js
 define(function(require, exports, module) {
 
   // 异步加载一个模块，在加载完成时，执行回调
@@ -102,45 +98,95 @@ define(function(require, exports, module) {
     c.doSomething();
     d.doSomething();
   });
-  
+
   // 解析后的模块绝对路径
   console.log(require.resolve('./b'));
-  
+
   // 当前模块的绝对路径
   console.log(module.uri);
-  
+
   // 当前模块的依赖
   console.log(module.dependencies);
 });
 ```
-```
-// 正确写法1
- exports.action = function () { }
- // 正确写法2
- return {
- 	action: function () { }
- }
- // 正确写法3
- module.exports = {
- 	action: function () { }
- }
- // 正确写法4
- define({
- 	action: function () { }
- })
- 
- // 错误写法
- exports = {
- 	action: function () { }
- }
-```
 `exports`是`module.exports`的一个引用
 
----
-### UMD
+## UMD
 
----
-### CommonJS
+## CommonJS
+```js
+const _ = require('lodash');
+Module {
+  id: '.',
+  exports: {},
+  parent: null,
+  filename: '当前模块的绝对路径',
+  loaded: false,
+  children:
+   [ Module {
+       id: 'node_modules/lodash/lodash.js的绝对路径',
+       exports: [Object],
+       parent: [Circular],
+       filename: 'node_modules/lodash/lodash.js的绝对路径',
+       loaded: true,
+       children: [],
+       paths: [Array] } ],
+  paths:
+   [ 'node_modules的绝对路径',
+     ......(各级node_module目录)
+     '/node_modules' ]
+}
 
----
-### ES6 Modules
+module.exports = {};
+module.exports.noop = function () {};
+exports.noop = function () {};
+// wrong
+exports = {};
+console.assert(module.exports === exports);
+// Module { load, require, _compile }
+console.log(module.__proto__);
+
+function require(/* ... */) {
+  const module = { exports: {} };
+  ((module, exports) => {
+    // Module code here. In this example, define a function.
+    function someFunc() {}
+    exports = someFunc;
+    // At this point, exports is no longer a shortcut to module.exports, and
+    // this module will still export an empty default object.
+    module.exports = someFunc;
+    // At this point, the module will now export someFunc, instead of the
+    // default object.
+  })(module, module.exports);
+  return module.exports;
+}
+
+Module.prototype.require = function (path) {
+  return Module._load(path, this);
+};
+
+// 删除所有模块的缓存
+Object.keys(require.cache).forEach(function(key) {
+  delete require.cache[key];
+})
+
+
+// module-a.js
+const b = require('./module-b');
+const a = 'a';
+console.log({ name: 'module-a', a, b });
+
+// module-b.js
+const a = require('./module-a');
+const b = 'b';
+console.log({ name: 'module-b', a, b });
+
+// index.js
+// { name: 'module-b', a: {}, b: 'b' }
+// { name: 'module-a', a: 'a', b: 'b' }
+// When index.js loads a.js, then a.js in turn loads b.js. At that point, b.js tries to load a.js. In order to prevent an infinite loop, an unfinished copy of the a.js exports object is returned to the b.js module. b.js then finishes loading, and its exports object is provided to the a.js module.
+const a = require('./module-a');
+const b = require('./module-b');
+```
+
+## ES6 Modules
