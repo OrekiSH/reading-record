@@ -1,44 +1,5 @@
-## call stack
-JavaScript是单线程的编程语言，运行时(Runtime)是单线程的，所以只有一个call stack
-
-```js
-function multiply (a, b) {
-  return a * b;
-}
-
-function square (n) {
-  return multiply(n, n);
-}
-
-function printSquare (n) {
-  var squared = square(n);
-  console.log(squared);
-}
-
-printSquare(4);
-
-/**
----------------------------------------------
-multiply(n, n) // get return statement pop->
----------------------------------------------
-square(n)
----------------------------------------------
-printSquare(4)
----------------------------------------------
-main()
----------------------------------------------
-
--------------------------------------------
-console.log(squared) // end of the function
--------------------------------------------
-printSquare(4)
--------------------------------------------
-main()
--------------------------------------------
-*/
-```
 ## scope
-JavaScript采用的是词法作用域(Lexical Scope)模型
+JavaScript采用的是词法作用域(Lexical Scope)
 
 ```js
 function foo() {
@@ -51,8 +12,61 @@ function bar() {
 }
 
 var a = 1;
-
 bar();
+```
+```js
+/*
+var fooReference = {
+  base: EnvironmentRecord,
+  name: 'foo',
+  strict: false,
+};
+*/
+function foo () { return this; }
+foo();
+```
+```js
+let a = {
+  name: 'a',
+  fn: function () { return this; },
+};
+console.assert(a.fn() === a);
+console.assert((a.fn)() === a);
+console.log((false || a.fn)());
+```
+```
+let fn = function () { return this; }
+let a = {
+  name: 'a',
+  fn,
+};
+console.log(a.fn());
+```
+```js
+let f = function () {
+  let name = 'fn';
+  return function () {
+    return this;
+  };
+}
+let a = {
+  name: 'a',
+  fn: f,
+};
+
+let foo = a.fn();
+let bar = foo;
+console.assert(foo() === bar());
+```
+```js
+function captureShadow (shadowed) {
+  return function (shadowed) {
+    return shadowed;
+  };
+}
+
+let captured = captureShadow(1);
+console.log(captured(2));
 ```
 
 ## strict mode
