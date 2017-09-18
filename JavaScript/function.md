@@ -179,6 +179,40 @@ console.assert(Person.getName === undefined);
 
 ## 继承
 ```js
+// 组合继承
+function Parent (lastName, firstName = 'Nicholas', friends) {
+  console.log(Parent.prototype);
+  this.name = `${firstName} ${lastName}`;
+  this.friends = friends;
+}
+
+Parent.prototype.say = function () {
+  return this.name;
+};
+
+Parent.prototype.callFriends = function () {
+  this.friends.forEach(e => console.log(e));
+};
+
+Parent.prototype.addFriend = function (e) {
+  this.friends.push(e);
+}
+
+function Children (lastName, friends) {
+  Parent.apply(this, [lastName, undefined, friends]);
+}
+
+Children.prototype = new Parent();
+Children.prototype.constructor = Parent;
+
+var father = new Parent('C.Zakas', undefined, [1, 2, 3]);
+console.log(father.say());
+father.addFriend(4);
+father.callFriends();
+
+var son = new Children('Zakas',[1, 2]);
+console.log(son.say());
+son.callFriends();
 // 原型链
 function SuperType () {
   this.property = true;
@@ -202,20 +236,6 @@ var instance = new SubType();
 // chrome v58.0: SubType { subproperty: false }
 // firefox v54.0: Object { subproperty: false }
 console.log(instance);
-/**
-{
-  subproperty: false,
-  __proto__: SuperType {
-    getSubTypeValue: function() {}
-    property: true
-    __proto__: Object {
-      constructor: function SuperType()
-      getSuperTypeValue: function getSuperTypeValue()
-      __proto__: Object {}
-    }
-  }
-}
-*/
 console.assert(instance.getSuperTypeValue() === true);
 console.assert(instance.constructor === SuperType.prototype);
 ```
@@ -282,12 +302,8 @@ console.log(instance);
   }
 }
 ```
-```
-// 组合继承
 
-//　寄生组合式继承
-```
-#### ES2015+
+## ES2015+
 ```js
 (param1, param2, …, paramN) => expression;
 (param1, param2, …, paramN) => { return expression; }
