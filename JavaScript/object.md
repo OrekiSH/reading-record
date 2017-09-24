@@ -1,5 +1,16 @@
 ## 继承
 
+`Object.prototype`属性表示`Object`的原型对象, 所有的对象都继承了`Object.prototype`的属性和方法，它们可以被覆盖(除了以null为原型的对象，如 `Object.create(null)`), `configurable`,`enumerable`,`writable`都为`false`
+```js
+console.assert(Object.create(null).constructor === undefined);
+```
+```js
+console.assert(Object.prototype.__proto__ === null);
+console.assert(Object.__proto__ === Function.prototype);
+
+console.assert(Function.prototype.__proto__ === Object.prototype);
+```
+
 ```js
 var a = {
   x: 10,
