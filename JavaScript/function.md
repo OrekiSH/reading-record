@@ -94,46 +94,42 @@ console.log(captured(2));
 
 ## 创建对象
 ```js
-//工厂模式
-function Person (name, age) {
+function Parent (name) {
   var obj = {};
   obj.name = name;
-  obj.age = age;
 
   return obj;
 }
-var p = Person('L', 18);
-
-console.assert(!(p instanceof Person));
-console.assert(p.constructor === Object);
+var person = Parent('Jack');
+// no prototype of cause
+var person = new Parent('Jack');
 ```
 
 ```js
-//构造函数(构造函数内定义的函数要在每个实例上重新创建)
-function Person (name, age) {
+function Parent (name) {
   this.name = name;
-  this.age = age;
+  this.getSelf = function () { return this; };
+}
+var person = new Parent('Jack');
+// no return statement so can not call getSelf
+var person = Parent('Jack');
+
+console.assert(Parent.prototype.constructor === Parent);
+console.assert(person.__proto__ === Parent.prototype);
+```
+
+```js
+function Parent (name) {
+  var obj = {};
+  obj.name = name;
+  // obj.prototype = Parent;
+  obj.prototype = this;
+
+  return obj;
 }
 
-var p = new Person('L', 18);
-
-// 对象的__proto__属性指向对象constructor属性的原型
-console.assert(Object.constructor === Function);
-console.assert(Function.constructor === Function);
-
-console.assert(p.constructor === Person);
-
-console.assert(Person.prototype.constructor === Person);
-
-// p的__proto__属性指向Person的原型
-console.assert(p.__proto__ === Person.prototype)
-// Person的原型的__proto__指向Object的原型
-console.assert(Person.prototype.__proto__ === Object.prototype);
-console.assert(Object.prototype.__proto__ === null);
-
-console.assert(Person.__proto__ === Function.prototype);
-console.assert(Object.__proto__ === Function.prototype);
-console.assert(Function.prototype.__proto__ === Object.prototype);
+var person = new Parent('Jack');
+console.log(person.prototype.constructor);
 ```
 
 ```js
