@@ -1,46 +1,57 @@
 ## 继承
 
-`Object.prototype`属性表示`Object`的原型对象, 所有的对象都继承了`Object.prototype`的属性和方法，它们可以被覆盖(除了以null为原型的对象，如 `Object.create(null)`), `configurable`,`enumerable`,`writable`都为`false`
+`Object.prototype`属性表示`Object`的原型对象, 所有的对象都继承了`Object.prototype`的属性和方法，它们可以被覆盖(除了以null为原型的对象，如 `Object.create(null)`),`Object.prototype`的`configurable`,`enumerable`,`writable`都为`false`
 ```js
 console.assert(Object.create(null).constructor === undefined);
 ```
-```js
-console.assert(Object.prototype.__proto__ === null);
-console.assert(Object.__proto__ === Function.prototype);
 
-console.assert(Function.prototype.__proto__ === Object.prototype);
+```js
+console.assert(Object.prototype === Object.prototype);
+// dont forget undefined === undefined
 ```
 
 ```js
-var a = {
-  x: 10,
-  calculate: function (z) {
-    return this.x + this.y + z;
+console.assert(Object.__proto__ === Function.prototype);
+console.assert(Function.prototype.__proto__ === Object.prototype);
+console.assert(Object.prototype.__proto__ === null);
+
+function ObjectCreate (obj, properties) {
+  var F = function () {};
+  F.prototype = obj;
+
+  var createdObj = new F();
+  if ({}.toString.call(properties) === '[object Object]')
+    Object.defineProperties(createdObj, properties);
+
+  return createdObj;
+}
+```
+
+```js
+var parent = {
+  name: 'Jack',
+  getSelf: function () {
+    return this;
   },
 };
 
-// 原型
-var b = {
-  y: 20,
-  __proto__: a, // 过时且不被推荐的
-};
-
-var c = {
-  y: 30,
-  __proto__: a,
-};
-
-//　拼接
-var b = Object.assign({}, a, {
-  y: 20,
+var child = Object.create(parent, {
+  age: {
+    writable: true,
+    configurable: true,
+    value: 18,
+  },
 });
+console.log(child); // more secret :)
 
-var c = Object.assign({}, a, {
-  y: 30,
+var child = {
+  ...parent,
+  age: 18,
+};
+var child = Object.assign({}, parent, {
+  age: 18,
 });
-
-b.calculate(30); //60
-c.calculate(40); //80
+console.log(child);
 ```
 ## 数据属性和访问器Accessor属性
 ```js
@@ -164,6 +175,11 @@ if (true) {
   let _foo = 1;
 }
 console.log(foo);
+```
+```js
+const { foo = 1 } = {
+  foo: 2,
+};
 ```
 
 ## ES2015+
