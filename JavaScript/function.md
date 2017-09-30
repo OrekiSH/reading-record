@@ -34,7 +34,7 @@ console.assert(a.fn() === a);
 console.assert((a.fn)() === a);
 console.log((false || a.fn)());
 ```
-```
+```js
 let fn = function () { return this; }
 let a = {
   name: 'a',
@@ -91,6 +91,16 @@ console.log(captured(2));
 ③给未声明的变量赋值会抛出**ReferenceError**异常
 
 ④函数调用中的this会指向**undefined**,当函数通过call,apply,bind调用时,this的值为**传入参数的值**,不进行类型转换
+
+## prototype
+
+```js
+function fn () {}
+console.assert({}.toString.call(fn.prototype) === '[object Object]');
+
+console.assert({}.toString.call(Function.prototype) === '[object Function]');
+console.assert(Function.prototype === Function.prototype);
+```
 
 ## 创建对象
 ```js
