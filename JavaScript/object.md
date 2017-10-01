@@ -53,46 +53,64 @@ var child = Object.assign({}, parent, {
 });
 console.log(child);
 ```
-## 数据属性和访问器Accessor属性
+## 数据属性和访问器(Accessor)属性
 ```js
 // 数据属性
-[[configurable]],
-[[enumerable]],//for-in,Object.keys(),JSON.stringify()
+[[configurable]],// if property can be redefined or deleted
+[[enumerable]],// for-in,Object.keys(),JSON.stringify()
 [[writable]],
-[[value]]
+[[value]],
 // 访问器属性
 [[configurable]],
 [[enumerable]],
 [[get]],
-[[set]]
+[[set]],
 ```
+
 ```js
-<h1 id="name">some text</h1>
+var obj = {};
+var descriptor = Object.create(null);
+descriptor.value = 'static';
+// not enumerable, not configurable, not writable as defaults
+Object.defineProperty(obj, 'key', descriptor);
+```
 
-var person = {
-  _age: 18,
-  name: 'john'
-};
+```js
+var variables = null;
 
-Object.defineProperty(person, 'age', {
+var watcher = {};
+Object.defineProperty(watcher, 'variables', {
   get: function () {
-    return document.getElementById('name').innerHTML;
+    return variables;
   },
-  set: function (newValue) {
-    this._age = newValue;
-    this.name += newValue;
-    document.getElementById('name').innerHTML = newValue;
+  set: function (value) {
+    variables = value;
   },
 });
+
+watcher.variables = Function.prototype;
+console.assert(variables === Function.prototype);
+variables = undefined;
+console.assert(watcher.variables === undefined);
 ```
 
 ## 类数组对象
 ```js
-// 只存在整数属性的对象不存在length属性, 不为类数组对象
-var a = { '1': 2 };
+// 只存在整数属性的对象不存在`length`属性, 不为类数组对象
+var arg = {
+  0: 'a',
+  1: 'b',
+};
+console.assert(arg.hasOwnProperty('length') === false);
+console.assert([].slice.call(arg).length === 0);
 
-Array.prototype.slice.call(arguments);
+var arg = {
+  0: 'a',
+  length: 1,
+};
+console.log([].slice.call(arg));
 ```
+
 ## statement and expression
 ```js
 a = b * 2;
