@@ -1,3 +1,24 @@
+## prototype
+
+```js
+function fn () {}
+console.assert({}.toString.call(fn.prototype) === '[object Object]');
+
+console.assert({}.toString.call(Function.prototype) === '[object Function]');
+console.assert(Function.prototype === Function.prototype);
+console.assert(Function.prototype === Function.__proto__);
+```
+
+```js
+function fn () {}
+console.assert(fn.__proto__ === Function.prototype);
+console.assert(fn.prototype.__proto__ === Object.prototype);
+
+console.assert(Object.__proto__ === Function.prototype);
+console.assert(Function.prototype.__proto__ === Object.prototype);
+```
+
+
 ## scope
 JavaScript采用的是词法作用域(Lexical Scope)
 
@@ -14,6 +35,7 @@ function bar() {
 var a = 1;
 bar();
 ```
+
 ```js
 /*
 var fooReference = {
@@ -25,6 +47,7 @@ var fooReference = {
 function foo () { return this; }
 foo();
 ```
+
 ```js
 let a = {
   name: 'a',
@@ -34,6 +57,7 @@ console.assert(a.fn() === a);
 console.assert((a.fn)() === a);
 console.log((false || a.fn)());
 ```
+
 ```js
 let fn = function () { return this; }
 let a = {
@@ -42,6 +66,7 @@ let a = {
 };
 console.log(a.fn());
 ```
+
 ```js
 let f = function () {
   let name = 'fn';
@@ -92,17 +117,9 @@ console.log(captured(2));
 
 ④函数调用中的this会指向**undefined**,当函数通过call,apply,bind调用时,this的值为**传入参数的值**,不进行类型转换
 
-## prototype
 
-```js
-function fn () {}
-console.assert({}.toString.call(fn.prototype) === '[object Object]');
+## 创建对象(with return)
 
-console.assert({}.toString.call(Function.prototype) === '[object Function]');
-console.assert(Function.prototype === Function.prototype);
-```
-
-## 创建对象
 ```js
 function Parent (name) {
   var obj = {};
@@ -110,77 +127,120 @@ function Parent (name) {
 
   return obj;
 }
-var person = Parent('Jack');
-// no prototype of cause
-var person = new Parent('Jack');
+// 工厂(factory)模式
+var personA = Parent('Jack');
+// 寄生构造函数(parasitic constructor)模式
+var personB = new Parent('Jack');
+console.assert(personA.constructor === personB.constructor);
 ```
 
 ```js
-function Parent (name) {
-  this.name = name;
-  this.getSelf = function () { return this; };
-}
-var person = new Parent('Jack');
-// no return statement so can not call getSelf
-var person = Parent('Jack');
+function Parent () { return 1; }
 
-console.assert(Parent.prototype.constructor === Parent);
+var person = new Parent();
+// console.assert(person.constructor === Parent);
 console.assert(person.__proto__ === Parent.prototype);
 ```
 
 ```js
 function Parent (name) {
-  var obj = {};
-  obj.name = name;
-  // obj.prototype = Parent;
-  obj.prototype = this;
+  var obj = function () {};
+  obj.prototype.name = name;
+  obj.prototype.constructor = this;
 
-  return obj;
+  return new obj();
 }
 
-var person = new Parent('Jack');
-console.log(person.prototype.constructor);
+var personA = Parent('Jack');
+var personB = new Parent('Jack');
+console.assert(personA.constructor !== personB.constructor);
 ```
 
-```js
-//原型(修改原型中包含引用类型值的属性导致的共享问题)
-function Person () {};
-
-Person.prototype = {
-  type: 'human being',
-  getType:  function () {
-    return this.type;
-  },
-  // constructor: Person,(重设constructor属性,[[enumerable]]将被设置为true, 也可用defineProperty重设constructor属性)
-};
-
-var p = new Person();
-
-console.assert(!p.hasOwnProperty('type'));
-```
+## 创建对象(without return)
 
 ```js
-// 组合模式
-function Person (name) {
+function Parent (name) {
   this.name = name;
-  this.friends = ['A', 'K'];
+  // equals to this.getSelf = new Function ('return this;');
+  this.getSelf = function () { return this; };
 }
+var person = new Parent('Jack');
+// set property 'name' of global
+// var person = Parent('Jack');
+```
 
-Person.prototype = {
-  constructor: Person,
-  getName: function () {
-    console.log(this.name);
+```js
+function Parent () {}
+
+// Parent.prototype.constructor is unenumerable now
+Parent.prototype.name = 'Jack';
+Parent.prototype.getSelf = function () { return this; };
+
+// Parent.prototype.constructor is enumerable now
+Parent.prototype = { constructor: Parent };
+
+// 原型(prototype)模式
+var person = new Parent();
+```
+
+```js
+function Parent (name) {
+  this.name = name;
+  // 动态原型(dynamic prototype)模式
+  if ({}.toString.call(this.getSelf) !== ['object Function']) {
+    Parent.prototype.getSelf = function () { return this; };
   }
 }
+```
 
-var l = new Person('L');
-var n = new Person('N');
-l.friends.push('M');
-console.assert(l.friends !== n.friends);
-console.assert(l.getName === l.__proto__.getName);
-console.assert(l.getName === Person.prototype.getName);
+```js
+function Parent () {}
+Parent.prototype.dataTypes = [];
 
-console.assert(Person.getName === undefined);
+var personA = new Parent();
+var personB = new Parent();
+
+personA.dataTypes.push(null);
+console.log(personB.dataTypes);
+
+personA.dataTypes = [null, undefined];
+console.log(personB.dataTypes);
+```
+
+```js
+function Parent () {}
+var person = new Parent();
+
+Parent.prototype = {
+  name: 'Jack',
+};
+console.assert(person.name === undefined);
+Parent.prototype.name = 'Jack';
+console.assert(person.name === 'Jack');
+```
+
+```js
+function Parent () {}
+Parent.prototype = undefined;
+var person = new Parent();
+console.assert(person.__proto__ === Object.prototype);
+
+Parent.prototype = Object.create(null);
+var person = new Parent();
+console.assert(person.__proto__ === undefined);
+```
+
+```js
+function Parent () {
+  this.dataTypes = [];
+}
+// 组合(combination)模式
+Parent.prototype.name = 'Jack';
+var personA = new Parent();
+var personB = new Parent();
+
+personA.dataTypes.push(null);
+console.log(personB);
 ```
 
 ## 继承
@@ -192,14 +252,10 @@ function Parent (lastName, firstName = 'Nicholas', friends) {
   this.friends = friends;
 }
 
-Parent.prototype.say = function () {
-  return this.name;
-};
-
+Parent.prototype.say = function () { return this.name; };
 Parent.prototype.callFriends = function () {
   this.friends.forEach(e => console.log(e));
 };
-
 Parent.prototype.addFriend = function (e) {
   this.friends.push(e);
 }
@@ -219,6 +275,9 @@ father.callFriends();
 var son = new Children('Zakas',[1, 2]);
 console.log(son.say());
 son.callFriends();
+```
+
+```js
 // 原型链
 function SuperType () {
   this.property = true;
@@ -246,69 +305,6 @@ console.assert(instance.getSuperTypeValue() === true);
 console.assert(instance.constructor === SuperType.prototype);
 ```
 
-```
-SubType.prototype = {
-  constructor: SuperType,
-  getSubTypeValue () {
-    return this.subproperty;
-  }
-};
-console.log(instance);
-{
-  subproperty: false,
-  __proto__: Object {
-    constructor: function SuperType()
-    getSubTypeValue: function getSubTypeValue()
-    __proto__: Object {}
-  }
-}
-```
-```
-SubType.prototype = {
-  constructor: new SuperType(),
-  getSubTypeValue () {
-    return this.subproperty;
-  }
-};
-console.log(instance);
-{
-  subproperty: false,
-  __proto__: Object {
-    constructor: SuperType {
-      property: true
-      __proto__: Object {
-        constructor: function SuperType()
-        getSuperTypeValue: function getSuperTypeValue()
-        __proto__: Object {}
-      }
-    }
-    getSubTypeValue: function getSubTypeValue()
-    __proto__: Object {}
-  }
-}
-```
-```
-SubType.prototype = {
-  constructor: SuperType.prototype,
-  getSubTypeValue () {
-    return this.subproperty;
-  }
-};
-console.log(instance);
-{
-  subproperty: false,
-  __proto__: Object {
-    constructor: Object {
-      constructor: function SuperType()
-      getSuperTypeValue: function getSuperTypeValue()
-      __proto__: Object {}
-    }
-    getSubTypeValue: function getSubTypeValue()
-    __proto__: Object {}
-  }
-}
-```
-
 ## ES2015+
 ```js
 (param1, param2, …, paramN) => expression;
@@ -319,20 +315,27 @@ _ => { statements; }
 
 (param1, param2, ...rest) => { statements }
 ```
+
 ```js
-function myFunction(x, y, z) { }
+function fn (x, y, z) { }
 var args = [0, 1, 2];
 
-myFunction(...args);
+fn(...args);
 
 var Foo = () => {};
 var foo = new Foo(); // TypeError
-console.assert(Foo.prototype === undefined)
+console.assert(Foo.prototype === undefined);
+
+var fn = () => { return this; }
+// desugar to
+'use strict';
+var fn = function fn () {
+  return undefined;
+};
 
 // arguments
 var f = () => [...arguments];
 console.log(f(1,2,3)); // ReferenceError
-
 ```
 
 ## 函数柯里化 currying
