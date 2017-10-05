@@ -105,6 +105,20 @@ setImmediate(() => {
 });
 ```
 
+```js
+let arr = [];
+setInterval(() => {
+  let tmp = arr;
+  if (tmp.length > 0) tmp = tmp.map(e => [++e[0], e[1]]);
+  if (tmp.length > 7) tmp.shift();
+
+  tmp.push([0, Math.random(1)]);
+  console.log(tmp); // turn to [1, ...] in browser, :(
+
+  arr = tmp;
+}, 1000);
+```
+
 ## microtask queue
 
 ```js
