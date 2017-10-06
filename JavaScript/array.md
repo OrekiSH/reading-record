@@ -9,6 +9,7 @@ JavaScript中的数组是一种拥有一些类数组特性的对象，其第一�
 var arr = [];
 console.assert(arr[0] === arr['0'])
 ```
+
 ```js
 console.assert([] == ![]);
 
@@ -49,85 +50,72 @@ var queue = [1, 2];
 queue.shift();
 
 var elems = document.querySelectorAll('select option:checked');
-var values = Array.prototype.map.call(elems, function (obj) {
-  return obj.value;
-});
+var values = Array.prototype.map.call(elems, obj => obj.value);
 
 // Array.prototype.reduce(若提供了initialValue, currentIndex从0开始, 否则从1开始)
-[0, 1, 2, 3, 4].reduce(function(accumulator, currentValue, currentIndex, array){
+Array.prototype.reduce(function (accumulator, currentValue, currentIndex, array) {
   return accumulator + currentValue;
-}, 10);
-[[1, 2], [3, 4], [5, 6]].reduce((a, c) => [...a, ...c]);
+}, initialValue);
+
 ['a', 'b', 'c', 'a'].reduce((a, c) => {
-  if (c in a) {
-    a[c]++;
-  } else {
-    a[c] = 1;
-  }
+  if (c in a) a[c]++;
+  else a[c] = 1;
 
   return a;
 }, {});
 
-Array.prototype.slice();
-Array.prototype.slice(start, end);// [start, end)
+const flattenDeep = arr => Array.isArray(arr)
+  ? arr.reduce((a, b) => [...flattenDeep(a), ...flattenDeep(b)], [])
+  : [];
 
 Array.prototype.sort(function (a, b) {
   return [-1, 0, 1][?];// SpiderMonkey can deal with true&false, v8 can not.
 });
 
+Array.prototype.slice(start, end);// [start, end)
+
 // 若deleteCount被省略, 则默认被赋值为array.length - start
 Array.prototype.splice(start, deleteCount, itemN);
+
+[0, false, NaN, null, undefined,  '', 1].filter(v => v);
 ```
 
-## ES2015+ Array constructor
+## ES2015+
+
 ```js
 Array.of(1, 2, 3);
 // polyfill
-Array.of = function () {
-  return Array.prototype.slice.call(arguments);
-};
+Array.of = () => Array.prototype.slice.call(arguments);
 
-Array.from([1, 2, 3], x => x + x);
-Array.from({length: 5}, (v, i) => i);
+// range
+Array.from({length: n}, (v, i) => i);
+[...Array(n).keys()];
 ```
 
-## ES2015+ Array prototype
 ```js
-var str = '12345';
-var str1 = [...str].reverse().join();
+var str1 = '123';
+var str2 = [...str].reverse().join();
 // desugar
-var str2 = [].slice.call(str).reverse().join();
+var str2 = [].slice.call(str1).reverse().join();
 
-const [...iterableObj] = [1, 3, 5, 7, 9];
-console.log([0, 2, ...iterableObj, 4, 6, 8]);
+const [...iterableObj] = [1, 2, 3];
 
-let arr = [1, 2, 3];
-let arr2 = [...arr]; // arr.slice();
+let arr1 = [1, 2, 3];
+let arr2 = [...arr1];
+// desugar
+var arr2 = [].concat(arr1); // equals to arr1.slice();
 
-var arr1 = [0, 1, 2];
-var arr2 = [3, 4, 5];
-arr1.push(...arr2); // Array.prototype.push.apply(arr1, arr2);
+const [head, ...tail] = [1, 2, 3];
+
+var arr1 = [1, 2];
+var arr2 = [3, 4];
+arr1.push(...arr2);
+// desugar
+Array.prototype.push.apply(arr1, arr2);
 arr1.concat(arr2); // 不改变参与运算的数组
 
 var nodeList = document.querySelectorAll('div');
 var array = [...nodeList];
-```
 
-## lodash
-```js
-_.uniq([1, 2, 1]);
-function uniq(array) {
-  return (array && array.length) ? baseUniq(array) : [];
-}
-
-_.uniqBy([{ age: 18 }, { age: 18 }, [1], [1]], 'age');
-function uniqBy(array, iteratee) {
-  return (array && array.length) ? baseUniq(array, getIteratee(iteratee, 2)) : [];
-}
-
-_.uniqWith([{ age: 18 }, { age: 18 }, [1], [1]], _.isEqual);
-function uniqWith(array, comparator) {
-  comparator = typeof comparator == 'function' ? comparator : undefined;
-  return (array && array.length) ? baseUniq(array, undefined, comparator) : [];
-}
+Array.prototype.fill(value, start, end);// [start, end)
 ```
