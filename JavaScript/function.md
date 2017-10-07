@@ -94,6 +94,16 @@ let captured = captureShadow(1);
 console.log(captured(2));
 ```
 
+```js
+var Constructor = function () {
+  function Constructor () {
+    console.log(this);
+  }
+
+  return Constructor;
+};
+```
+
 ## strict mode
 *IE在IE10引入
 
@@ -336,6 +346,69 @@ var fn = function fn () {
 // arguments
 var f = () => [...arguments];
 console.log(f(1,2,3)); // ReferenceError
+```
+
+```js
+class Counter {
+  static state = {
+    name: 'counter',
+  };
+
+  constructor () { this.id = 1; }
+  add () { this.id++; }
+}
+
+// desugar
+var _createClass = function () {
+  function defineProperties (target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) 
+        descriptor.writable = true;
+        
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+  
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) 
+      defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) 
+      defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+function _classCallCheck (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+var Counter = function () {
+  function Counter () {
+    _classCallCheck(this, Counter);
+
+    this.id = 1;
+  }
+
+  _createClass(Counter, [
+    {
+      key: 'add',
+      value: function add() {
+        this.id++;
+      },
+    },
+  ]);
+
+  return Counter;
+}();
+
+Counter.state = {
+  name: 'counter',
+};
 ```
 
 ## 函数柯里化 currying
