@@ -104,6 +104,28 @@ var Constructor = function () {
 };
 ```
 
+## closure
+
+```js
+const obj = (function () {
+  let data = {};
+  return (key, val) => {
+    if (val === undefined) return data[key];
+    return data[key] = val;
+  };
+})();
+```
+
+```js
+const secret = e => () => e;
+
+const obj = {};
+const foo = secret(obj)();
+const bar = secret(obj)();
+
+console.assert(foo === bar);
+```
+
 ## strict mode
 *IE在IE10引入
 
