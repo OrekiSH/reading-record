@@ -275,6 +275,34 @@ personA.dataTypes.push(null);
 console.log(personB);
 ```
 
+```js
+function defineProperty (obj, key, value) {
+  Object.defineProperty(obj, key, {
+    value,
+    writable: true,
+    configable: true,
+  });
+}
+
+function Parent (data) {
+  defineProperty(this, 'data', data);
+  defineProperty(this, 'status', 'pending');
+}
+
+defineProperty(Parent.prototype, 'getSelf', function () {
+  return this;
+});
+
+defineProperty(Parent.prototype, Symbol.toStringTag, 'Parent');
+
+var person = new Parent({
+  name: 'Jack',
+});
+
+console.log(Object.getOwnPropertyNames(Parent.prototype));
+console.log(Object.getOwnPropertySymbols(Parent.prototype));
+```
+
 ## 继承
 ```js
 // 组合继承
