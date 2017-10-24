@@ -1,39 +1,68 @@
+```
+const toString = Object.prototype.toString;
+```
 ## prototype
 
 ```js
 function fn () {}
-console.assert({}.toString.call(fn.prototype) === '[object Object]');
 
-console.assert({}.toString.call(Function.prototype) === '[object Function]');
+// "constructor" property only
+Object.getOwnPropertyNames(fn.prototype);
+// nine properties
+Object.getOwnPropertyNames(fn.__proto__);
+// has "__proto__" property
+Object.getOwnPropertyNames(fn.prototype.__proto__);
+console.assert(fn.prototype.__proto__ === fn.__proto__.__proto__);
+
+Object.getOwnPropertyDescriptor(fn.prototype, 'constructor');
+Object.getOwnPropertyDescriptor(fn.__proto__, 'constructor');
+```
+
+```js
 console.assert(Function.prototype === Function.prototype);
 console.assert(Function.prototype === Function.__proto__);
 ```
 
-```js
-function fn () {}
-console.assert(fn.__proto__ === Function.prototype);
-console.assert(fn.prototype.__proto__ === Object.prototype);
-
-console.assert(Object.__proto__ === Function.prototype);
-console.assert(Function.prototype.__proto__ === Object.prototype);
-```
-
-
-## scope
-JavaScript采用的是词法作用域(Lexical Scope)
+## lexical scope (static scope)
 
 ```js
-function foo() {
-  console.log(a);
-}
+function foo () { console.log(a); }
 
-function bar() {
+function bar () {
   var a = 2;
   foo();
 }
 
 var a = 1;
 bar();
+```
+
+```
+var foo = function () { console.log(1); };
+foo();
+var foo = function () { console.log(2); };
+foo();
+
+function foo () { console.log(1); }
+foo();
+function foo () { console.log(2); }
+foo();
+```
+
+```js
+var scope = 'global';
+
+function checkScope () {
+  function fn () { console.log(scope); }
+  var scope = 'local';
+
+  return fn;
+}
+
+var fn = checkScope();
+fn();
+
+checkScope()();
 ```
 
 ```js
