@@ -1,4 +1,4 @@
-```
+```js
 const toString = Object.prototype.toString;
 ```
 ## prototype
@@ -22,12 +22,37 @@ Object.getOwnPropertyDescriptor(fn.__proto__, 'constructor');
 console.assert(Function.prototype === Function.prototype);
 console.assert(Function.prototype === Function.__proto__);
 ```
+## execution context
+
+The unique global object is created before control enters any execution context.
+
+When control is transferred to ECMAScript **executable code**(global code, eval code, function code), control is entering an execution context.
+
+Active execution contexts logically form a stack. The top execution context on this logical stack is the running execution context.
+
+initial global execution context
+- Set the VariableEnvironment to the Global Environment.
+- Set the LexicalEnvironment to the Global Environment.
+- Set the ThisBinding to the global object.
+
 
 ## lexical scope (static scope)
 
 ```js
-function foo () { console.log(a); }
+function foo () { console.log(scope); }
+var scope = 'global';
+foo();
 
+function foo () {
+  console.log(scope);
+  var scope = 'local';
+}
+var scope = 'global';
+foo();
+```
+
+```js
+function foo () { console.log(a); }
 function bar () {
   var a = 2;
   foo();
@@ -37,16 +62,29 @@ var a = 1;
 bar();
 ```
 
-```
-var foo = function () { console.log(1); };
-foo();
-var foo = function () { console.log(2); };
-foo();
+```js
+var foo = 'bar';
+function foo() {};
+console.log(foo);
 
+// var
+function foo() {};
+var foo = 'bar';
+console.log(foo);
+```
+
+```js
+// hoisting
+foo();
+var foo = function () { console.log(1); }
+
+foo();
 function foo () { console.log(1); }
+var foo = function () { console.log(2); }
+
 foo();
+var foo = function () { console.log(1); }
 function foo () { console.log(2); }
-foo();
 ```
 
 ```js
@@ -61,7 +99,6 @@ function checkScope () {
 
 var fn = checkScope();
 fn();
-
 checkScope()();
 ```
 
