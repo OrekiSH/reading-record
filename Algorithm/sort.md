@@ -142,3 +142,39 @@ function mergeSort (array) {
   return sort(stored);
 }
 ```
+
+## quick
+
+```js
+function quickSort (array) {
+  let stored = [...Object.create(array)];
+
+  function partition (array, left, right) {
+    let storeIndex = left;
+    const pivot = array[right];
+
+    for (let i = left; i < right; i++) {
+      if (array[i] < pivot) {
+        swap(array, storeIndex, i);
+        storeIndex += 1;
+      }
+    }
+    swap(array, right, storeIndex);
+
+    return storeIndex;
+  }
+
+  function sort (array, left, right) {
+    if (left > right) {
+      return;
+    }
+    const storeIndex = partition(array, left, right);
+    sort(array, left, storeIndex - 1);
+    sort(array, storeIndex + 1, right);
+  }
+
+  sort(stored, 0, stored.length - 1);
+
+  return stored;
+}
+```
