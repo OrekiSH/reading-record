@@ -146,28 +146,86 @@ function mergeSort (array) {
 ## quick
 
 ```js
+function partition (array, left, right) {
+  let storeIndex = left;
+  const pivot = array[right];
+
+  for (let i = left; i < right; i++) {
+    if (array[i] < pivot) {
+      swap(array, storeIndex, i);
+      storeIndex += 1;
+    }
+  }
+  swap(array, right, storeIndex);
+
+  return storeIndex;
+}
+```
+
+```js
+([2, 4, 1, 3, 5], 3)
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+---------------------------------
+partition(array, 0, 3): 2 4 1 3 5
+partition(array, 0, 3): 2 4 1 3 5
+partition(array, 0, 3): 2 1 4 3 5
+partition(array, 0, 3): 2 1 3 4 5
+```
+
+```js
+function getLeastNumber (array, k) {
+  let stored = [...Object.create(array)];
+  let start = 0;
+  let end = stored.length - 1;
+  let index = partition(stored, start, end);
+
+  while (index !== k - 1) {
+    if (index > k - 1) {
+      end = index - 1;
+      index = partition(stored, start, end);
+    } else {
+      start = index + 1;
+      index = partition(stored, start, end);
+    }
+  }
+
+  return stored.slice(0, k);
+}
+```
+
+```js
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+partition(array, 0, 4): 2 4 1 3 5
+---------------------------------
+partition(array, 0, 3): 2 4 1 3 5
+partition(array, 0, 3): 2 4 1 3 5
+partition(array, 0, 3): 2 1 4 3 5
+partition(array, 0, 3): 2 1 3 4 5
+---------------------------------
+partition(array, 0, 1): 2 1 3 4 5
+partition(array, 0, 1): 1 2 3 4 5
+---------------------------------
+partition(array, 1, 1): 1 2 3 4 5
+---------------------------------
+partition(array, 3, 3): 1 2 3 4 5
+```
+
+```js
 function quickSort (array) {
   let stored = [...Object.create(array)];
-
-  function partition (array, left, right) {
-    let storeIndex = left;
-    const pivot = array[right];
-
-    for (let i = left; i < right; i++) {
-      if (array[i] < pivot) {
-        swap(array, storeIndex, i);
-        storeIndex += 1;
-      }
-    }
-    swap(array, right, storeIndex);
-
-    return storeIndex;
-  }
 
   function sort (array, left, right) {
     if (left > right) {
       return;
     }
+    
     const storeIndex = partition(array, left, right);
     sort(array, left, storeIndex - 1);
     sort(array, storeIndex + 1, right);
