@@ -19,6 +19,11 @@ Object.getOwnPropertyDescriptor(fn.__proto__, 'constructor');
 ```
 
 ```js
+var f = new fn()
+console.assert(f.__proto__ === fn.prototype);
+```
+
+```js
 console.assert(Function.prototype === Function.prototype);
 console.assert(Function.prototype === Function.__proto__);
 ```
@@ -35,18 +40,37 @@ initial global execution context
 - Set the LexicalEnvironment to the Global Environment.
 - Set the ThisBinding to the global object.
 
+```js
+// var foo = 'bar';
+declarations: [{
+  type: 'VariableDeclarator',
+  id: { type: 'Identifier', name: 'foo' },
+  init: { type: 'Literal', value: 'bar' },
+}]
+```
+
+```js
+var foo = 'bar';
+function foo () {};
+console.log(foo);
+```
+
+```js
+console.log(foo);
+var foo = 'bar';
+function foo () {}
+```
+
+```js
+foo();
+function foo () { console.log(1); }
+var foo = function () { console.log(2); }
+```
 
 ## lexical scope (static scope)
 
 ```js
 function foo () { console.log(scope); }
-var scope = 'global';
-foo();
-
-function foo () {
-  console.log(scope);
-  var scope = 'local';
-}
 var scope = 'global';
 foo();
 ```
@@ -60,31 +84,6 @@ function bar () {
 
 var a = 1;
 bar();
-```
-
-```js
-var foo = 'bar';
-function foo() {};
-console.log(foo);
-
-// var
-function foo() {};
-var foo = 'bar';
-console.log(foo);
-```
-
-```js
-// hoisting
-foo();
-var foo = function () { console.log(1); }
-
-foo();
-function foo () { console.log(1); }
-var foo = function () { console.log(2); }
-
-foo();
-var foo = function () { console.log(1); }
-function foo () { console.log(2); }
 ```
 
 ```js
@@ -233,14 +232,6 @@ console.assert(personA.constructor === personB.constructor);
 ```
 
 ```js
-function Parent () { return 1; }
-
-var person = new Parent();
-// console.assert(person.constructor === Parent);
-console.assert(person.__proto__ === Parent.prototype);
-```
-
-```js
 function Parent (name) {
   var obj = function () {};
   obj.prototype.name = name;
@@ -269,16 +260,25 @@ var person = new Parent('Jack');
 
 ```js
 function Parent () {}
+Parent.prototype.friends = [];
 
-// Parent.prototype.constructor is unenumerable now
+var A = new Parent();
+A.friends.push({ name: 'C' });
+var B = new Parent();
+B.friends.push({ name: 'D' });
+// B.__proto__.friends = [];
+```
+
+```js
+function Parent () {
+  this.friends = [];
+}
+// 组合(combination)模式
 Parent.prototype.name = 'Jack';
-Parent.prototype.getSelf = function () { return this; };
+var A = new Parent();
+var B = new Parent();
 
-// Parent.prototype.constructor is enumerable now
-Parent.prototype = { constructor: Parent };
-
-// 原型(prototype)模式
-var person = new Parent();
+A.friends.push({ name: 'C' });
 ```
 
 ```js
@@ -293,32 +293,6 @@ function Parent (name) {
 
 ```js
 function Parent () {}
-Parent.prototype.dataTypes = [];
-
-var personA = new Parent();
-var personB = new Parent();
-
-personA.dataTypes.push(null);
-console.log(personB.dataTypes);
-
-personA.dataTypes = [null, undefined];
-console.log(personB.dataTypes);
-```
-
-```js
-function Parent () {}
-var person = new Parent();
-
-Parent.prototype = {
-  name: 'Jack',
-};
-console.assert(person.name === undefined);
-Parent.prototype.name = 'Jack';
-console.assert(person.name === 'Jack');
-```
-
-```js
-function Parent () {}
 Parent.prototype = undefined;
 var person = new Parent();
 console.assert(person.__proto__ === Object.prototype);
@@ -326,19 +300,6 @@ console.assert(person.__proto__ === Object.prototype);
 Parent.prototype = Object.create(null);
 var person = new Parent();
 console.assert(person.__proto__ === undefined);
-```
-
-```js
-function Parent () {
-  this.dataTypes = [];
-}
-// 组合(combination)模式
-Parent.prototype.name = 'Jack';
-var personA = new Parent();
-var personB = new Parent();
-
-personA.dataTypes.push(null);
-console.log(personB);
 ```
 
 ```js
