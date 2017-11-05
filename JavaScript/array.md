@@ -119,3 +119,9 @@ var array = [...nodeList];
 
 Array.prototype.fill(value, start, end);// [start, end)
 ```
+
+## lodash
+
+```js
+const chunk = (array ,size) => array.reduce((a ,b, i, g) => !(i % size) ? a.concat([g.slice(i, i + size)]) : a, []);
+```
