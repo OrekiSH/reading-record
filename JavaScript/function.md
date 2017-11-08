@@ -182,14 +182,43 @@ const obj = (function () {
 ```
 
 ```js
-const secret = e => () => e;
+let theThing = {};
+setInterval(() => {
+  const originalThing = theThing;
 
-const obj = {};
-const foo = secret(obj)();
-const bar = secret(obj)();
+  const unused = function () {
+    if (originalThing)
+      console.log('hi');
+  };
 
-console.assert(foo === bar);
+  theThing = {
+    longStr: new Array(1e7).join('*'),
+    someMethod: function () {},
+  };
+}, 100);
 ```
+
+```js
+const stopWhenN = (function (n, delay, callback) {
+  let count = 0;
+  let timer = null;
+
+  return function stopWhenN(n, delay, callback) {
+    if (count >= n) {
+      clearTimeout(timer);
+      return;
+    };
+
+    count += 1;
+    typeof callback === 'function' ? callback() : (function () {})();
+
+    timer = setTimeout(function () {
+      stopWhenN(n, delay, callback);
+    }, delay);
+  }
+})();
+```
+
 
 ## strict mode
 *IE在IE10引入
