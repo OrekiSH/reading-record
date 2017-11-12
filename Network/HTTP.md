@@ -1,39 +1,43 @@
-注: 本文基于RFC2616和chromium61.0.3158.2
-#### 大纲
-- 消息 messages
-- 连接管理 connection management
-- 首部 headers
-- 请求方法 request methods
-- 响应状态码 response status codes
-- 访问控制 access control
-- 认证 authentication
-- 缓存 caching
-- cookies
-- 重定向 redirects
-
----
-#### 概述
-
 > The target of an HTTP request is called a "resource"
 
-**统一资源标识符的语法**
+## Uniform Resource Identifier
+```js
+protocol://host[:port][/path][?query][#fragment]
 
-- 协议 protocol
-- 主机 domain name
-- 端口 port
-- 路径 path to the file
-- 查询 parameters
-- 片段 anchor
-
-**data URIs的语法**
-```
+// data URIs
 data:[<mediatype>][;base64],<data>
 ```
 
-**MIME类型**
+## URL规范化
 
-- MIME类型是一种通知客户端其接收文件的多样性的机制,对大小写不敏感，但是传统写法都是小写.分为Discrete和Multipart类型
-- 音频或视频文件只有正确设置了MIME类型才能被 `<video> `或`<audio> `识别和播放
+- 删除Fragment
+- 删除默认端口
+- 删除空查询串('?'和'&')
+- 删除默认文件名('.index.html')
+- 删除多余的'www'
+- 末尾加'/'
+
+## HTTP/1.1
+
+- 连接可复用
+- 允许在第一个应答被完全发送之前发送第二个请求
+- 分块传输
+- 缓存控制机制
+- 内容协商机制(Accept-)
+
+## 3×× Redirection
+
+```js
+- 301 Moved Permanently // a user agent MAY change the request method from POST to GET for the subsequent request(cached)
+- 302 Found // a user agent MAY change the request method from POST to GET for the subsequent request
+- 304 Not Modified
+- 307 Temporary Redirect
+- 308 Permanent Redirect // cached
+
+// window.location.href = '<url>';
+// <meta http-equiv="refresh" content="<seconds>; url=<url>" />
+// redirect 301 <old-file> <new-file>
+```
 
 ---
 ### 缓存
