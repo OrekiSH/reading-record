@@ -2,11 +2,34 @@
 
 ## HTTP/1.1
 
-- 连接可复用
-- 允许在第一个应答被完全发送之前发送第二个请求
+- 持久连接,连接可复用
+- Pipelining,允许在第一个应答被完全发送之前发送第二个请求
 - 分块传输
 - 缓存控制机制
 - 内容协商机制(Accept-)
+
+```js
+Connection: keep-Alive // for HTTP/1.0
+Keep-Alive: timeout=5, max=100
+```
+
+## HTTP/2
+
+- 二进制分帧
+- 多路复用(Multiplexing)
+- 首部压缩
+- Server Push
+
+```
+ _______________
+|     应用层     |
+|__|二进制分帧|__|
+|_____会话层_____|
+|_____传输层_____|
+|_____网络层_____|
+|     物理层     |
+|_______________|  
+```
 
 ## 重定向
 
@@ -68,6 +91,17 @@ corrected_age_value = age_value + response_delay;
 corrected_initial_age = max(apparent_age, corrected_age_value);
 resident_time = now - response_time;
 current_age = corrected_initial_age + resident_time;
+```
+
+## Error
+
+```js
+400 Bad Request
+401 Unauthorized
+403 Forbidden
+405 Method Not Allowed
+500 Internal Server Error
+503 Service Unavailable
 ```
 
 ## Uniform Resource Identifier
