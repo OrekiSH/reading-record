@@ -1,3 +1,13 @@
+## Tensor
+
+> 1元 = 100分 = 10分×10分 = 1角×1角 = 0.1元×0.1元 = 0.01元
+
+100分 = 10分x10
+
+10分x10分 = 100分^2 = 0.01元^2
+
+1元 = 100分 -> 100分^2 = 0.01元^2
+
 ## Gradient Descent
 
 ```js
@@ -49,5 +59,16 @@ function run (iterations, stepSize) {
   });
 
   return Math.min(...result);
+}
+```
+
+## softmax
+
+```js
+function softmax (data) {
+  const dataExp = data.map(e => Math.exp(e));
+  const sum = dataExp.reduce((a, b) => a + b);
+
+  return dataExp.map(e => e / sum);
 }
 ```
