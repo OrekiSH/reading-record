@@ -1,5 +1,13 @@
 ## 三栏布局
 
+### grid
+```css
+.container {
+  display: grid;
+  grid-template-columns: 300px auto 300px;
+}
+```
+
 ### flexbox
 ```css
 .container {
@@ -16,8 +24,22 @@
 }
 ```
 
-### absolute positioning
+### table
+```css
+.container {
+  width: 100%;
+  display: table;
+}
+.container .left, .content, .right {
+  display: table-cell;
+  height: 100%;
+}
+.container .left, .right {
+  width: 300px;
+}
+```
 
+### absolute positioning
 ```css
 html, body {
   margin: 0;
@@ -45,7 +67,6 @@ html, body {
 ```
 
 ### float
-
 ```html
 <article class="container">
   <section class="left">left</section>
@@ -75,7 +96,6 @@ html, body {
 ```
 
 ### 双飞翼
-
 ```html
 <article class="container">
   <section class="content">content</section>
@@ -83,7 +103,6 @@ html, body {
 <section class="left">left</section>
 <section class="right">right</section>
 ```
-
 ```css
 html, body {
   margin: 0;
