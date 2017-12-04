@@ -129,3 +129,67 @@ html, body {
   margin-left: -300px;
 }
 ```
+
+## 垂直居中
+
+```css
+.container {
+  width: 500px;
+  text-align: center;
+}
+```
+```html
+<main class="container">
+  <h1>Am I centered yet?</h1>
+  <p>Center me, please!</p>
+</main>
+```
+
+### absolute positioning
+```css
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /*transform-style: preserve-3d;*/
+}
+```
+> 在某些浏览器中,这个方法可能会导致元素的显示有一些模糊,因为元素可能被放置在半个像素上
+
+### 50% viewport margin
+```css
+.container {
+  margin: 50vh auto 0;
+  transform: translateY(-50%);
+}
+```
+
+### flexbox
+```html
+<section class="main">
+  <main class="container">
+    <h1>Am I centered yet?</h1>
+    <p>Center me, please!</p>
+  </main>
+</section>
+```
+```css
+/*plan A*/
+.main {
+  display: flex;
+  min-height: 100vh;
+}
+.container {
+  margin: auto;
+}
+```
+```css
+/*plan B*/
+.main {
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+```
