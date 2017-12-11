@@ -1,3 +1,42 @@
+## GetValue
+```js
+function Get (base) {
+  const desc = ToObject(base).[[GetProperty]](P);
+  if (desc === undefined) {
+    return undefined;
+  }
+  if (IsDataDescriptor(desc)) {
+    return desc.[[Value]]
+  }
+
+  const getter = desc.[[Get]];
+  if (getter === undefined) {
+    return undefined;
+  }
+
+  return getter[[Call]]();
+}
+
+function GetValue() {
+  if (Type(V) is not Reference) {
+    return V;
+  }
+
+  const base = GetBase(V);
+  if (base === undefined) {
+    throw new ReferenceError();
+  }
+  
+  if (base is an object) {
+    const get = !HasPrimitiveBase(V) ? base.[[Get]] : Get;
+
+    return get(GetReferencedName(V));
+  } else { // base must be an environment record
+    return GetBindingValue(GetReferencedName(V), IsStrictReference(V));
+  }
+}
+```
+
 ## 继承
 
 `Object.prototype`属性表示`Object`的原型对象, 所有的对象都继承了`Object.prototype`的属性和方法，它们可以被覆盖(除了以null为原型的对象，如 `Object.create(null)`),`Object.prototype`的`configurable`,`enumerable`,`writable`都为`false`
