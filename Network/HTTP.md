@@ -1,5 +1,31 @@
 > The target of an HTTP request is called a "resource"
 
+## 内容协商机制(mechanisms for content negotiation)
+
+### 主动(Proactive)协商机制/服务端驱动型内容协商机制
+
+客户端设置特定的 HTTP 首部
+
+- `Accept`
+- `Accept-Charset`: 大多数浏览器会将 Accept-Charset 首部移除：Internet Explorer 8、Safari 5、Opera 11 以及 Firefox 10 都已经不再发送该首部
+- `Accept-Encoding`
+- `Accept-Language`
+- [` User-Agent`]
+
+### 响应式(Reactive)协商机制/代理驱动型协商机制
+
+脚本重定向
+
+## [range request](https://tools.ietf.org/html/rfc7233)
+
+- 请求成功，返回 `206 Partial Content`
+- 请求的范围越界, 返回 `416 Requested Range Not Satisfiable`
+- 不支持范围请求, 返回 `200 OK`
+
+```js
+Accept-Ranges: bytes/none
+```
+
 ## HTTP/1.1
 
 - 持久连接,连接可复用
