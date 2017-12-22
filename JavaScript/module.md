@@ -20,7 +20,7 @@ define(id?, dependencies?, factory);
 ```
 依赖参数是可选的，如果忽略此参数，它应该默认为["require", "exports", "module"].无论函数体中是否用到了`require`,模块 factory 构造方法的第一个参数必须命名,且必须为`require`.
 
-```
+```js
 <script data-main="src/main" src="https://cdn.bootcss.com/require.js/2.3.3/require.js"></script>
 // 模块系统的启动
 require(['./mod'], function (mod) { });
@@ -59,8 +59,59 @@ require(['./config'], function() {
  }
 ```
 
-## CMD
+```js
+(function (global) {
+  function require (deps, callback) {}
+  function define (id, deps, factory) {}
+  
+  function createScript (name, onload) {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.charset = 'utf-8';
+    script.async = true;
+    script.setAttribute('data-module', name);
+
+    function innerOnLoad() {
+      if (!script.readyState || /^complete$|^loaded$/.test(script.readyState)) {
+        script.onreadystatechange = script.onload = null;
+      }
+
+      onload && onload();
+    }
+
+    if (script.readyState) {
+      script.onreadystatechange = innerOnLoad;
+    } else {
+      script.onload = innerOnLoad;
+    }
+
+    script.src = /.+\.js$/i.test(name) ? name : name + '.js';
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+  
+  function getCurrentScript () {
+    if (document.currentScript) {
+      return document.currentScript;
+    }
+
+    var scripts = document.getElementsByTagName('script');
+    var len = scripts.length;
+    while (len--) {
+      var script = scripts[len];
+      if (script.readyState === 'interactive') {
+        return script;
+      }
+    }
+  }
+  
+  define.amd = {};
+  global.define = define;
+  global.require = require;
+}(this));
 ```
+
+## CMD
+```js
 define(factory);
 // define(id?, dependencies?, factory);
 ```
