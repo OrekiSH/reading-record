@@ -123,5 +123,18 @@ Array.prototype.fill(value, start, end);// [start, end)
 ## lodash
 
 ```js
-const chunk = (array ,size) => array.reduce((a ,b, i, g) => !(i % size) ? a.concat([g.slice(i, i + size)]) : a, []);
+const chunk = (arr ,size) => arr.reduce((a ,b, i, g) => !(i % size) ? a.concat([g.slice(i, i + size)]) : a, []);
+const chunk = (arr, size) =>
+  Array.from({length: Math.ceil(arr.length / size)}, (v, i) => arr.slice(i * size, i * size + size));
+  
+const compact = arr => arr.filter(Boolean);
+
+const pull = (arr, ...args) => {
+  let argState = Array.isArray(args[0]) ? args[0] : args;
+  let pulled = arr.filter((v, i) => !argState.includes(v));
+  arr.length = 0; 
+  pulled.forEach(v => arr.push(v));
+};
+
+const zipObject = (keys, values) => keys.reduce((obj, key, index) => (obj[key] = values[index], obj), {});
 ```
