@@ -117,52 +117,63 @@ define(factory);
 ```
 无论函数体中是否用到了`require`,模块 factory 构造方法的第一个参数必须命名,且必须为`require`.
 
-`require`的参数值必须是字符串直接量
 ```js
-// 模块系统的启动
-seajs.use('./path/mod', function (mod) { });
-
-seajs.config({
-	alias: {
-		/*
-		需要将jquery.js封装
-		 define(function(){
-		    //jquery源代码
-		    return $.noConflict();
-		});
-		*/
-		jquery: './path/jquery.js',
-	},
-})
-seajs.use('./main');
-```
-```js
-define(function(require, exports, module) {
-
-  // 异步加载一个模块，在加载完成时，执行回调
-  require.async('./b', function(b) {
-    b.doSomething();
-  });
-
-  // 异步加载多个模块，在加载完成时，执行回调
+define(function (require, exports, module) {
+  // 在加载完成时，执行回调
   require.async(['./c', './d'], function(c, d) {
     c.doSomething();
     d.doSomething();
   });
-
   // 解析后的模块绝对路径
   console.log(require.resolve('./b'));
-
   // 当前模块的绝对路径
   console.log(module.uri);
-
-  // 当前模块的依赖
-  console.log(module.dependencies);
 });
 ```
-`exports`是`module.exports`的一个引用
 
 ## UMD
+```js
+// nodeAdapter.js
+(function (define) {
+  define(function (require, exports, module) {
+    var b = require('b');
+
+    return function () {};
+  });
+}( // Help Node out by setting up define.
+    typeof module === 'object' && module.exports && typeof define !== 'function' ?
+    function (factory) { module.exports = factory(require, exports, module); } :
+    define
+));
+```
+
+```js
+// commonjsAdapter.js 
+if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+  var define = function (factory) {
+    factory(require, exports, module);
+  };
+}
+
+define(function (require, exports, module) {
+  var b = require('b');
+
+  exports.action = function () {};
+});
+```
+
+```js
+;(function (root, factory) {
+if(typeof exports === 'object' && typeof module === 'object')
+  module.exports = factory()
+else if(typeof define === 'function' && define.amd)
+  define([], factory)
+else if(typeof exports === 'object')
+  exports['module-name'] = factory()
+else
+  root['module-name] = factory()
+})(this, function () {});
+```
 
 ## CommonJS
 ```js
@@ -241,3 +252,123 @@ const b = require('./module-b');
 ```
 
 ## ES6 Modules
+```js
+import defaultExport from "module-name";
+import * as name from "module-name";
+import { export } from "module-name";
+import { export as alias } from "module-name";
+import { export1 , export2 } from "module-name";
+import { export1 , export2 as alias2 , [...] } from "module-name";
+import defaultExport, { export [ , [...] ] } from "module-name";
+import defaultExport, * as name from "module-name";
+import "module-name";
+
+export { name1, name2, …, nameN };
+export { variable1 as name1, variable2 as name2, …, nameN };
+export let name1, name2, …, nameN; // also var, function
+export let name1 = …, name2 = …, …, nameN; // also var, const
+
+export default expression;
+export default function (…) { … } // also class, function*
+export default function name1 (…) { … } // also class, function*
+export { name1 as default, … };
+
+export * from …;
+export { name1, name2, …, nameN } from …;
+export { import1 as name1, import2 as name2, …, nameN } from …;
+```
+
+## webpack
+
+```js
+import chunk from 'lodash/chunk';
+
+class Main {
+  constructor() {
+    console.log(this, chunk);
+  }
+}
+const m = new Main();
+
+export default Main;
+```
+
+```js
+(function (modules) {
+  var installedModules = {};
+
+  function __webpack_require__ (moduleId) {
+    if (installedModules[moduleId]) {
+      return installedModules[moduleId].exports;
+    }
+
+    var module = installedModules[moduleId] = {
+      i: moduleId,
+      l: false,
+      exports: {},
+    };
+    // Execute the module function
+    modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+    module.l = true;
+
+    return module.exports;
+  }
+
+  __webpack_require__.m = modules;
+
+  __webpack_require__.c = installedModules;
+
+  __webpack_require__.o = function (object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+  // define getter function for harmony exports
+  __webpack_require__.d = function (exports, name, getter) {
+    if(!__webpack_require__.o(exports, name)) {
+  		Object.defineProperty(exports, name, {
+  			configurable: false,
+  			enumerable: true,
+  			get: getter,
+  		});
+  	}
+  };
+  // getDefaultExport function for compatibility with non-harmony modules
+  __webpack_require__.n = function (module) {
+  	var getter = module && module.__esModule ?
+  		function getDefault() { return module['default']; } :
+  		function getModuleExports() { return module; };
+  	__webpack_require__.d(getter, 'a', getter);
+  	return getter;
+  };
+  // __webpack_public_path__
+  __webpack_require__.p = "";
+
+  return __webpack_require__(__webpack_require__.s = 3);
+})
+([
+  (function (module, exports) {
+    module.exports = isObject; // 0
+  }),
+  (function (module, exports, __webpack_require__) {
+    module.exports = baseGetTag; // 1
+  }),
+  (function (module, exports, __webpack_require__) {
+    module.exports = Symbol; // 2
+  }),
+  (function (module, __webpack_exports__, __webpack_require__) {
+    "use strict";
+    Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+    /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash_chunk__ = __webpack_require__(4);
+    /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash_chunk___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_lodash_chunk__);
+
+    class Main {
+      constructor() {
+        console.log(this, __WEBPACK_IMPORTED_MODULE_0_lodash_chunk___default.a);
+      }
+    }
+    const m = new Main();
+
+    /* harmony default export */ __webpack_exports__["default"] = (Main);
+  }),
+  (function (module, exports, __webpack_require__) {
+    module.exports = chunk; // 4
+  })
+])
+```
