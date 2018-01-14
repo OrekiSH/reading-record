@@ -39,6 +39,14 @@ Connection: keep-Alive // for HTTP/1.0
 Keep-Alive: timeout=5, max=100
 ```
 
+## HSTS (HTTP Strict Transport Security)
+- 当使用301、302跳转时，只要修改location指令，网站就会被劫持
+- 采用HSTS协议的网站将保证浏览器始终连接到该网站的HTTPS加密版本，不需要用户手动在URL地址栏中输入加密地址
+- HSTS的作用还包括阻止基于SSL Strip的中间人攻击，万一证书有错误，则显示错误，用户不能回避警告
+- `307 Internal Redirect`
+- `Strict-Transport-Security: max-age=<expire-time>; includeSubDomains`
+- `Strict-Transport-Security: max-age=<expire-time>; preload`
+
 ## HTTP/2
 
 - 二进制分帧
