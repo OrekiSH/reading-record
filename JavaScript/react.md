@@ -1,10 +1,14 @@
-## React设计思想
+## 设计思想
 - transformation: UI只是把数据通过映射关系转换为另外一种形式的数据，而且同样的输入必定有同样的输出
 - abstraction: 将UI抽象成隐藏内部细节，可复用的函数
 - 组合 composition: 将两个及以上的抽象函数合并为一个
 - state
 - memoization: 对于纯函数，使用相同参数时没有重复执行的必要
 - 延续 continuations : 推迟部分函数的执行，进而将一些样板代码移出业务逻辑
+
+## Virtual DOM
+## DOM diff
+## PureComponent
 
 ## React生命周期
 ```js

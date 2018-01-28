@@ -15,17 +15,23 @@ dialog.js依赖于utils.js,但是utils.js未引入.
 ```
 
 ## AMD
-```js
-define(id?, dependencies?, factory);
-```
+> define(id?, dependencies?, factory);
+
 依赖参数是可选的，如果忽略此参数，它应该默认为["require", "exports", "module"].无论函数体中是否用到了`require`,模块 factory 构造方法的第一个参数必须命名,且必须为`require`.
+```js
+// RequireJS
+deps = (callback.length === 1 ? ['require'] : ['require', 'exports', 'module']).concat(deps);
+```
+
+```html
+<script data-main="" src="https://cdn.bootcss.com/require.js/2.3.3/require.js"></script>
+```
 
 ```js
-<script data-main="src/main" src="https://cdn.bootcss.com/require.js/2.3.3/require.js"></script>
-// 模块系统的启动
+// 模块系统的启动(relative)
 require(['./mod'], function (mod) { });
 
-// load jQuery
+// top-level
 require.config({
   paths: {
     jquery: 'https://cdn.bootcss.com/jquery/3.2.1/jquery',
@@ -111,11 +117,6 @@ require(['./config'], function() {
 ```
 
 ## CMD
-```js
-define(factory);
-// define(id?, dependencies?, factory);
-```
-无论函数体中是否用到了`require`,模块 factory 构造方法的第一个参数必须命名,且必须为`require`.
 
 ```js
 define(function (require, exports, module) {

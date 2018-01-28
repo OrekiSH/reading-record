@@ -1,32 +1,26 @@
-```js
-const toString = Object.prototype.toString;
-```
 ## prototype
 
 ```js
-function fn () {}
+// 构造函数
+function F () {}
+// 实例
+var f = new F();
+// 原型对象
+var Fprototype = F.prototype;
 
-// "constructor" property only
-Object.getOwnPropertyNames(fn.prototype);
-// nine properties
-Object.getOwnPropertyNames(fn.__proto__);
-// has "__proto__" property
-Object.getOwnPropertyNames(fn.prototype.__proto__);
-console.assert(fn.prototype.__proto__ === fn.__proto__.__proto__);
+console.log(f.__proto__ === F.prototype);
+console.log(F.prototype.constructor === F);
+console.log(f.constructor === F);
 
-Object.getOwnPropertyDescriptor(fn.prototype, 'constructor');
-Object.getOwnPropertyDescriptor(fn.__proto__, 'constructor');
+// Object.getOwnPropertyNames(Fprototype);
+// Object.getOwnPropertyDescriptor(F.prototype, 'constructor');
+
+var fn = new Function();
+console.log(fn.__proto__ === Function.prototype);
+console.log(fn.constructor === Function);
+// console.log(Function.__proto__ === Function.prototype);
 ```
 
-```js
-var f = new fn()
-console.assert(f.__proto__ === fn.prototype);
-```
-
-```js
-console.assert(Function.prototype === Function.prototype);
-console.assert(Function.prototype === Function.__proto__);
-```
 ## execution context
 
 The unique global object is created before control enters any execution context.

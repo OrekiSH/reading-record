@@ -46,3 +46,17 @@ _.forEach(while)            (690,650)
 Array.forEach               (422,247)
 for in
 ```
+
+## Array.isArray vs Array.prototype.toString.call
+```js
+// Firefox 55.0.2
+Array.isArray       (2,005,652,450)
+instanceof Array    (1,911,794,158)
+toString.call          (45,463,099)
+```
+```js
+// chrome 59.0.3071.115
+Array.isArray       (740,810,518)
+instanceof Array    (172,834,324)
+toString.call        (28,445,158)
+```
