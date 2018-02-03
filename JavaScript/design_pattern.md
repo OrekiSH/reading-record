@@ -1,22 +1,36 @@
 ## 观察者(Observer)/发布-订阅(Publish–subscribe)模式
 
 ```js
-function Emitter () {
-  this.callStack = [];
+function Observer () {
+  this._subjects = [];
+  this._eventCount = 0;
 }
 
-Emitter.prototype.on = function (eventName, listener) {
-  this.callStack.push({
+Observer.prototype.on = function (eventName, listener) {
+  if (this._subjects.filter(e => e.listenerName === listener.name).length) {
+    return;
+  }
+
+  this._subjects.push({
     name: eventName,
     listener,
+    listenerName: listener.name || null,
+    id: this._eventCount,
   });
+
+  this._eventCount += 1;
 };
 
-Emitter.prototype.emit = function (eventName) {
-  Array.prototype.slice.call(arguments, 1).forEach(arg => {
-    this.callStack.find(e => e.name === eventName)
-    && this.callStack.find(e => e.name === eventName).listener(arg);
-  });
+Observer.prototype.removeListener = function (eventName, listener) {
+  if (listener.name) {
+    this._subjects = this._subjects.filter(e => e.listenerName !== listener.name);
+  }
+};
+
+Observer.prototype.emmit = function (eventName, ...args) {
+  const _subjects = this._subjects.filter(e => e.name === eventName);
+
+  _subjects.forEach(subject => subject.listener(...args));
 };
 ```
 ```js
