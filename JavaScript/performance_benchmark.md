@@ -60,3 +60,30 @@ Array.isArray       (740,810,518)
 instanceof Array    (172,834,324)
 toString.call        (28,445,158)
 ```
+
+## Double exclamation mark vs Boolean
+```js
+// Firefox 58.0.2
+!!          (1,972,676,698)
+Boolean     (1,898,041,676)
+// Chrome 56.0.2924
+!!            (989,776,011)
+Boolean        (31,909,878)
+// Chrome 64.0.3282
+!!            (807,679,102)
+Boolean       (776,490,904)
+```
+
+## Number vs. mul vs. parseInt vs. parseFloat
+```js
+// Firefox 58.0.2
+parseInt     (45,218,564)
+parseFloat   (34,378,613)
+Number       (24,604,260)
+*            (16,819,952)
+// Chrome 64.0.3282
+Number       (725,194,761)
+*            (701,529,870)
+parseFloat    (19,011,356)
+parseInt      (15,761,237)
+```
