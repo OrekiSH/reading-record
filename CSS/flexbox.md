@@ -4,19 +4,20 @@
 .container {
   /* when you set the direction to a reversed row or column, start and end are also reversed */
   flex-direction: row | row-reverse | column | column-reverse;
-  
-  justify-content: flex-start | flex-end | center | space-between | space-around | (space-evenly);
-  
-  align-items: stretch | flex-start | flex-end | center | baseline;
-  
-  flex-wrap: nowrap | wrap | wrap-reverse;
-  
+
+  flex-wrap: nowrap | wrap | wrap-reverse; /* 不换行的情况下,flex容器的宽度有可能会大于视窗宽度 */
+
   flex-flow: <flex-direction> <flex-wrap>;
+
+  justify-content: flex-start | flex-end | center | space-between | space-around | (space-evenly);
+
+  align-items: stretch | flex-start | flex-end | center | baseline;
 
   /* this property has no effect on a single-line flex container */
   align-content: stretch | flex-start | flex-end | center | space-between | space-around;
 }
 ```
+
 
 ## flex items
 
@@ -27,16 +28,53 @@ the margins of adjacent flex items do not collapse.
 ```css
 .item {
   order: <integer>;
-  
+
+  /**
+   * flex-grow: 0;
+   * flex-shrink: 1;
+   * flex-basis: auto;
+   */
   flex-grow: <number>; /* 拉伸因子(grow factor) */
   flex-shrink: <number>;
   flex-basis: <width>;
 
-  flex: none | <flex-grow> (<flex-shrink> <flex-basis>);
-  
+  /**
+   * flex: auto;
+   * flex: 1 1 auto;
+   */
+  flex: none | <flex-grow> (<flex-shrink> <flex-basis>); /* GSB */
+
   align-self: auto | flex-start | flex-end | center | baseline | stretch;
 }
 ```
+
+```html
+<style>
+  .container {
+    display: flex;
+    width: 500px;
+  }
+  .container div {
+    flex-basis: 200px;
+  }
+  .container .box {
+    flex-shrink: 2;
+  }
+</style>
+
+<section class="container">
+  <div>1</div>
+  <div>2</div>
+  <div class="box">3</div>
+  <div>4</div>
+  <div>5</div>
+</section>
+
+<script>
+  // $('.box').getBoundingClientRect().width === ?
+</script>
+```
+
 
 ```html
 <style>
@@ -101,4 +139,3 @@ $container-max-widths: (
   xl: 1140px
 );
 ```
-

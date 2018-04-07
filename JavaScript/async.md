@@ -1,6 +1,10 @@
 ## promise
 
 ```js
+const waitFor = ms => new Promise(r => setTimeout(r, ms));
+```
+
+```js
 function getJSON (url) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -22,7 +26,7 @@ const p3 = 3;
 
 const p4 = new Promise((resolve, reject) => {
   setTimeout(resolve, 100, 4);
-}); 
+});
 Promise.all([p1, p2, p3]).then(vals => console.log(vals));
 ```
 

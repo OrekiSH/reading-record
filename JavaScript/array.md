@@ -7,7 +7,7 @@ JavaScript中的数组是一种拥有一些类数组特性的对象，其第一�
 
 ```js
 var arr = [];
-console.assert(arr[0] === arr['0'])
+console.assert(arr[0] === arr['0']);
 ```
 
 ```js
@@ -126,13 +126,13 @@ Array.prototype.fill(value, start, end);// [start, end)
 const chunk = (arr ,size) => arr.reduce((a ,b, i, g) => !(i % size) ? a.concat([g.slice(i, i + size)]) : a, []);
 const chunk = (arr, size) =>
   Array.from({length: Math.ceil(arr.length / size)}, (v, i) => arr.slice(i * size, i * size + size));
-  
+
 const compact = arr => arr.filter(Boolean);
 
 const pull = (arr, ...args) => {
   let argState = Array.isArray(args[0]) ? args[0] : args;
   let pulled = arr.filter((v, i) => !argState.includes(v));
-  arr.length = 0; 
+  arr.length = 0;
   pulled.forEach(v => arr.push(v));
 };
 

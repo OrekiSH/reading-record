@@ -1,52 +1,5 @@
 > The target of an HTTP request is called a "resource"
 
-## 内容协商机制(mechanisms for content negotiation)
-
-### 主动(Proactive)协商机制/服务端驱动型内容协商机制
-
-客户端设置特定的 HTTP 首部
-
-- `Accept`
-- `Accept-Charset`: 大多数浏览器会将 Accept-Charset 首部移除：Internet Explorer 8、Safari 5、Opera 11 以及 Firefox 10 都已经不再发送该首部
-- `Accept-Encoding`
-- `Accept-Language`
-- [` User-Agent`]
-
-### 响应式(Reactive)协商机制/代理驱动型协商机制
-
-脚本重定向
-
-## [range request](https://tools.ietf.org/html/rfc7233)
-
-- 请求成功，返回 `206 Partial Content`
-- 请求的范围越界, 返回 `416 Requested Range Not Satisfiable`
-- 不支持范围请求, 返回 `200 OK`
-
-```js
-Accept-Ranges: bytes/none
-```
-
-## HTTP/1.1
-
-- 持久连接,连接可复用
-- Pipelining,允许在第一个应答被完全发送之前发送第二个请求
-- 分块传输
-- 缓存控制机制
-- 内容协商机制(Accept-)
-
-```js
-Connection: keep-Alive // for HTTP/1.0
-Keep-Alive: timeout=5, max=100
-```
-
-## HSTS (HTTP Strict Transport Security)
-- 当使用301、302跳转时，只要修改location指令，网站就会被劫持
-- 采用HSTS协议的网站将保证浏览器始终连接到该网站的HTTPS加密版本，不需要用户手动在URL地址栏中输入加密地址
-- HSTS的作用还包括阻止基于SSL Strip的中间人攻击，万一证书有错误，则显示错误，用户不能回避警告
-- `307 Internal Redirect`
-- `Strict-Transport-Security: max-age=<expire-time>; includeSubDomains`
-- `Strict-Transport-Security: max-age=<expire-time>; preload`
-
 ## HTTP/2
 
 - 二进制分帧
@@ -64,6 +17,59 @@ Keep-Alive: timeout=5, max=100
 |     物理层     |
 |_______________|  
 ```
+
+## HTTP/1.1
+
+- 持久连接,连接可复用
+- Pipelining,允许在第一个应答被完全发送之前发送第二个请求
+- 分块传输
+- 缓存控制机制
+- 内容协商机制(Accept-)
+
+```js
+Connection: keep-Alive // for HTTP/1.0
+Keep-Alive: timeout=5, max=100
+```
+
+## 内容协商机制(mechanisms for content negotiation)
+
+服务端驱动型(主动)内容协商: 客户端设置特定的 HTTP 首部
+
+- `Accept`
+- `Accept-Charset`(IE8不再发送该首部)
+- `Accept-Encoding`
+- `Accept-Language`
+- [`User-Agent`]
+
+用户代理驱动型(响应式)协商: 服务端返回状态码300或406, 脚本重定向
+
+## [range request](https://tools.ietf.org/html/rfc7233)
+
+- 请求成功，返回 `206 Partial Content`
+- 请求的范围越界, 返回 `416 Requested Range Not Satisfiable`
+- 不支持范围请求, 返回 `200 OK`
+
+```js
+Accept-Ranges: bytes/none
+```
+
+## HSTS (HTTP Strict Transport Security)
+- 当使用301、302跳转时，只要修改location指令，网站就会被劫持
+- 采用HSTS协议的网站将保证浏览器始终连接到该网站的HTTPS加密版本，不需要用户手动在URL地址栏中输入加密地址
+- HSTS的作用还包括阻止基于SSL Strip的中间人攻击，万一证书有错误，则显示错误，用户不能回避警告
+- `307 Internal Redirect`
+- `Strict-Transport-Security: max-age=<expire-time>; includeSubDomains`
+- `Strict-Transport-Security: max-age=<expire-time>; preload`
+
+
+## OSI七层
+- 应用层: DNS, HTTP
+- 表示层
+- 会话层
+- 传输层: TCP, UDP
+- 网络层: IP
+- 数据链路层
+- 物理层
 
 ## 重定向
 
@@ -103,7 +109,7 @@ If-None-Match: <string>
 
 ```js
 // 隐式缓存
-response_code_ == 300 
+response_code_ == 300
 response_code_ == 301
 response_code_ == 308
 response_code_ == 410
