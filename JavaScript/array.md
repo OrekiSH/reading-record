@@ -78,6 +78,9 @@ Array.prototype.slice(start, end);// [start, end)
 Array.prototype.splice(start, deleteCount, itemN);
 
 [0, false, NaN, null, undefined,  '', 1].filter(v => v);
+
+// range
+Array.apply(null, {length: n}).map(Function.call, Number);
 ```
 
 ## ES2015+
