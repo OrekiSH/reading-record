@@ -1,5 +1,4 @@
 ## 浏览器与浏览器内核
-- 
 - 浏览器一战: 1998年IE取代Netscape Navigator成为主流浏览器
 - 浏览器二战: 2003年后IE市场份额逐步受到其他浏览器蚕食
 - 浏览器内核的作用: 将HTML/CSS/JavaScript文本及其相应资源文件转化为图像的模块
@@ -27,5 +26,16 @@
 - Chromium网络栈的调用过程: URLRequest -> URLRequetJob -> HttpNetworkTransaction -> HttpSession -> HttpStream -> StreamSocket
 - URLRequetJob对象被创建后,首先从Cookie管理器中获取与该URL相关联的信息
 - 会话型Cookie和持续型Cookie: Session Cookie保存在内存中，在浏览器退出时清除; Persistent Cookie在有效期一直保留Cookie的内容
-- DNS预读取和TCP预连接: DNS查询的评价时间是60-120ms, TCP三次握手也是几十毫秒左右.如何实现DNS预读取?
+- DNS预读取和TCP预连接: DNS查询的平均时间是60-120ms, TCP三次握手也是几十毫秒左右.如何实现DNS预读取?
 - HTTP管线化的优势和缺陷: HTTP Pipelining将多个HTTP请求填充在一个TCP数据包内, HOL bolcking问题
+
+## HTML解释器和DOM
+- Webkit中的资源最初是从网络传输或是本地文件读取而来的字节流
+- HTML解释器: 字节流 -> 字符流 -> 词语(tokens) -> Node -> DOM树
+- Shadow DOM: 使得一些DOM在网页渲染结果中可见, 而在DOM Tree中不可见(`element.attachShadow(shadowRootInit)`)
+
+## 渲染
+- RenderObject树和DOM树不是一一对应的, WebKit只为DOM树的document结点, DOM树中的可视结点(包括Shadow DOM), 匿名RenderObject结点创建RenderObject对象
+- Document对应的RenderView, <html>对应的RenderBlock, 含有`overflow`, alpha值的RenderObject结点都会建立RenderLayer结点
+- CPU完成的绘图操作被称为软件渲染，GPU完成的绘图操作被称为硬件加速合成化渲染。软件渲染机制是没有合成阶段的，软件渲染中使用的一个位图对应CPU使用的一块内存空间
+- 由于CPU的缓存机制有效减少了重复绘制的开销，并且简单的绘制操作不需要GPU的并行性, 常见的2D绘图操作使用GPU不一定有性能优势
