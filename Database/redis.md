@@ -73,3 +73,26 @@ struct redisServer {
   sds aof_buf;
 }
 ```
+
+## 事件
+- 文件事件处理器(file event handler): I/O多路复用程序监听多个套接字，并通过一个有序同步队列向文件事件分派器(dispatcher)传递那些产生了事件的套接字.文件事件分派器则根据套接字产生的事件类型调用事件处理器
+- serverCron(时间事件): 更新服务器各类统计信息, 清理过期键值对和连接失效的客户端，尝试进行持久化操作
+
+## 复制
+- 通过`SLAVEOF`命令或者设置slaveof选项, 让一个服务器去复制另一个服务器, 称被复制的服务器为主服务器，进行复制的被成为从服务器。进行复制中的主从服务器双方保持着相同的数据，这种现象被称为数据库状态一致
+- Redis的复制功能分为同步和命令传播
+- SYNC: 从服务器向主服务器发送`SYNC`命令，主服务器收到`SYNC`命令后执行`BGSAVE`命令,并使用一个缓冲区记录现在开始执行的所有写命令。`BGSAVE`命令执行完成后，主服务器将生成的RDB文件和记录在缓冲区的写命令发送给从服务器。
+- PSYNC: 分为完整重同步(SYNC)和部分重同步模式。部分重同步功能由主从服务器的复制偏移量，主服务器的复制积压缓冲区(replication backlog), 服务器的运行ID(40个随机的十六进制字符)三部分组成。
+- 复制积压缓冲区: 固定长度(1MB)的先进先出队列。当主服务器进行命令传播时，不仅会将写命令发送给所有从服务器，还会将写命令入队到复制积压缓冲区中，复制积压缓冲区记录了每个字节对应的复制偏移量。如果offset偏移量之后的数据依然存在于复制积压缓冲区中，则进行部分重同步，反之则进行完整重同步.
+
+## 慢查询日志
+```c
+typedef struct slowlogEntry {
+  long long id;
+  time_t time; // 命令执行时间
+  long long duration; // 执行命令耗时(μs)
+  robj **argv;
+  int argc;
+} slowlogEntry
+```
+- `CONFIG SET slow-log-slower-than <integer>(μs)`, `CONFIG SET slowlog-max-len <integer>`, `SLOWLOG GET`
