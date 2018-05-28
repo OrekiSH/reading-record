@@ -21,3 +21,33 @@
 - 段(segment)是占用存储空间的数据库对象, 由一个或多个区段组成。例如创建一个表时会创建一个表段(若是创建表时声明了索引， 也会创建一个索引段), 每个段都只属于一个表空间
 - 区段(extent)是磁盘上一组逻辑连续的块, 文件本身在磁盘上并不是连续的
 - 块是数据库中最小的分配单元和I/O单位
+
+## 内存结构
+- 系统全局区(System Global Area, SGA): `select pool, name, bytes from v$sgastat order by pool, name`
+- 进程全局区(PGA): PGA不会在SGA中分配
+- 用户全局区(UGA)
+
+
+## 内存结构
+- 系统全局区(System Global Area, SGA): `select pool, name, bytes from v$sgastat order by pool, name`
+- 进程全局区(PGA): PGA不会在SGA中分配
+- 用户全局区(UGA)
+
+## 进程
+- 服务器进程(专用/共享): 解析SQL查询并将查询放在共享池中，提出查询计划，必要时执行查询计划
+- 连接与会话: 连接是客户进程与Oracle实例间的一条物理连接(例如客户端和实例的网络连接); 会话则是数据库的一个逻辑实体，客户进程可以在会话上执行SQL。一条连接上可以有0到多个会话，每个会话都是独立的，即使他们共享一条数据库连接
+- Oracle Net: 远程执行，地址空间执行 `select a.spid, b.process from v$process a, v$session b where a..addr = b.paddr and b.sid = (<select>)`
+- 后台进程: `select paddr, name, description from v$bgprocess where paddr <> '00' order by paddr desc;`
+- 从属进程: I/O从属进程(为不支持异步I/O的设备模拟异步I/O)，并行查询从属进程(对于`SELECT`, `CREATE TABLE`, `CREATE INDEX, UPDATE`等创建一个执行计划，其中包含可以同时完成的多个子执行计划)
+
+## 中心后台进程
+- 进程监视器(PMON): 出现异常终止的连接后恢复或撤销未提交的工作，并释放失败进程分配的SGA资源; 监控其他的Oracle后台进程, 必要时重启这些进程; 向Oracle TNS监听器注册实例
+- 系统监视器(SMON): 清理临时空间，合并表空间中互相连续的空闲区段，恢复由于文件不可用导致的失败事务，执行RAC中失败结点的实例恢复，清理OBJ$, 收缩和离线回滚段
+- 分布式数据库恢复(RECO)
+- 检查点进程(CKPT)
+- 数据库块写入器(DBWn): 将缓冲区中的脏块刷新输出到磁盘
+- 日志写入器(LGWR): 将SGA中重做日志缓冲区的内容刷新输出到磁盘(每3秒会刷新输出一次，任何事务发出一个提交，重做日志缓冲区使用超过1/3， 或是已包含1MB的缓冲数据)
+- 归档进程: ARCn
+- 诊断性进程: DIAG
+
+## 数据库表
