@@ -46,3 +46,27 @@
 - 长期存活的对象将进入老年代: 虚拟机给每个对象定义了一个对象年龄计数器, 对象在Eden被分配且经过第一次Minor GC后依然存活，且能被Survivor容纳的话将被移动到Survivor中，且对象年龄计数器的值被设为1, 之后每经过一次Minor GC计数器加1，当计数器的值达到15(-XX:MaxTenuringThreshold)时该对象将被移动到老年代
 - 动态对象年龄判定: 当Survivor空间中相同年龄的对象大小总和超过Survivor的一半是，年龄大于等于该年龄的对象直接进入老年代
 - 空间分配担保: Minor GC之前，JVM会先检查老年代最大可用连续内存空间是否大于新生代所有对象之和，条件成立则认为Minor GC是安全的(复制算法)；若条件不成立JVM将会查看`HandlePromotionFailure`的设置值, 如果允许担保失败，将检查老年代最大可用连续内存空间是否大于每次晋升到老年代对象的评价大小，若条件成立则进行Minor GC, 否则进行Full GC
+
+## 类文件结构
+- Java虚拟机不和任何语言绑定，只于Class文件关联
+- Class文件是一组以8位字节为基础单位的二进制流，各个数据项目之间没有分隔符，当遇到需要占用8位字节以上的数据项时则按照高位在前(大端, Big-Endian)的方式分割成若干个8位字节进行存储
+- 每个Class文件的头4个字节(0xCAFEBABE)被称为魔数(Magic Number), 唯一作用便是身份识别(能否被虚拟机接受)。第5和6字节是次版本号，第7和8字节是主版本号
+- 常量池: 常量池中常量的数量是不固定的，因此需要在常量池的入口放置一项u2类型的数据,代表常量池容量计数值(constant_pool_count),常量池容量计数值是从1开始的。常量池中存放了字面量(literal)和符号引用(symbolic references)，字面量包括字符串，常量值等；符号引用包括类和接口的全限定名，字段的名称和描述符，方法的名称和描述符。
+- 访问标志(access_flags): 标识了用于识别类或接口的访问信息，例如Class是类还是接口，是否定义为public类型等
+- 类索引(this_class)，父类索引(super_class), 接口索引集合(interfaces)
+- 字段表(field_info): 用于描述接口或类中声明的变量，如字段的作用域(public/private/protected), 实例变量或类变量(static)等
+- 方法表: 依次包括访问标志，名称索引，描述符索引，属性表集合(attributes)
+- 属性表: `Code`(Java程序方法体中的代码经过编译后的字节码), `Exceptions`(方法描述时在throws关键字后列举的异常), `LineNumberTable`(Java源码行号与字节码行号之间的对应关系, 取消生成异常堆栈将不会显示出错行号也无法设置断点调试), `LocalVariableTable`(Java源码中定义变量与栈帧中局部变量表中变量的对应关系, 取消生成将无法在调试期间根据参数名称从上下文中获得参数值), `SourceFile`(Class文件的源码文件名), `ConstantValue`(通知JVM自动为静态变量赋值), `InnerClasses`(内部类和宿主类的关联)
+
+## 字节码指令
+- JVM的指令由1字节的数字(指令集为0-255)和0到多个参数构成，前者被称为操作码(opcode),后者被称为操作数(operands)。由于JVM采用面向操作数栈而不是寄存器，因此大多数指令只包含opcode
+- 大多数指令都包含了操作对应的数据类型信息，如`iload`用于从局部变量表中加载`int`型的数据到操作栈中
+- 加载和存储指令: 将一个局部变量加载到操作栈(load)，将一个数值从操作数栈存储到局部变量表(store), 将一个常量加载到操作数栈(const, push), 扩充局部变量表的访问索引(wide)
+- 算术指令: 整型与浮点型，对于`byte`, `short`, `char`, `boolean`没有直接支持是算术指令，使用操作`int`类型的指令代替
+- 类型转换指令: 宽化类型转换(widening numeric conversions)与窄化类型转换(narrowing numeric conversions), widening包括`int`->`long/float/double`, `long`->`float/double`, `float`->`double`; narrowing的转换规则为`NaN`->`0(int/long)`, IEEE754向零舍入模式取整
+- 对象创建与访问指令: `new`, `newarray`, `getfield`, `arraylength`, `instanceof`
+- 操作数栈管理指令: `pop`, `dup`, `swap`
+- 控制转移指令: 有条件或无条件的修改PC寄存器的值
+- 方法调用和返回指令: `invokevirtual`(调用对象的实例方法), `invokeinterface`(在运行时搜索实现该接口方法的对象), `invokespecial`(实例初始化方法), `invokestatic`, `invokedynamic`(在运行时解析并执行调用点限定符所引用的方法)
+- 异常处理指令: `athrow`
+- 同步指令: `monitorenter`, `monitorexit`
