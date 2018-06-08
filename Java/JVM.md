@@ -61,12 +61,89 @@
 ## 字节码指令
 - JVM的指令由1字节的数字(指令集为0-255)和0到多个参数构成，前者被称为操作码(opcode),后者被称为操作数(operands)。由于JVM采用面向操作数栈而不是寄存器，因此大多数指令只包含opcode
 - 大多数指令都包含了操作对应的数据类型信息，如`iload`用于从局部变量表中加载`int`型的数据到操作栈中
-- 加载和存储指令: 将一个局部变量加载到操作栈(load)，将一个数值从操作数栈存储到局部变量表(store), 将一个常量加载到操作数栈(const, push), 扩充局部变量表的访问索引(wide)
+- 加载和存储指令: 将一个局部变量加载到操作栈(`load`)，将一个数值从操作数栈存储到局部变量表(`store`), 将一个常量加载到操作数栈(`const`, `push`), 扩充局部变量表的访问索引(`wide`)
 - 算术指令: 整型与浮点型，对于`byte`, `short`, `char`, `boolean`没有直接支持是算术指令，使用操作`int`类型的指令代替
 - 类型转换指令: 宽化类型转换(widening numeric conversions)与窄化类型转换(narrowing numeric conversions), widening包括`int`->`long/float/double`, `long`->`float/double`, `float`->`double`; narrowing的转换规则为`NaN`->`0(int/long)`, IEEE754向零舍入模式取整
 - 对象创建与访问指令: `new`, `newarray`, `getfield`, `arraylength`, `instanceof`
 - 操作数栈管理指令: `pop`, `dup`, `swap`
 - 控制转移指令: 有条件或无条件的修改PC寄存器的值
-- 方法调用和返回指令: `invokevirtual`(调用对象的实例方法), `invokeinterface`(在运行时搜索实现该接口方法的对象), `invokespecial`(实例初始化方法), `invokestatic`, `invokedynamic`(在运行时解析并执行调用点限定符所引用的方法)
+- 方法调用和返回指令: `invokevirtual`(调用对象的虚方法), `invokeinterface`(在运行时搜索实现该接口方法的对象), `invokespecial`(调用实例<init>方法，私有方法和父类方法), `invokestatic`, `invokedynamic`(在运行时解析并执行调用点限定符所引用的方法)
 - 异常处理指令: `athrow`
 - 同步指令: `monitorenter`, `monitorexit`
+
+## 字节码执行引擎
+- 运行时栈帧(stack frame): 运行时数据区中虚拟机栈的栈元素，存储了方法的局部变量表，操作数栈，动态连接和方法返回地址等信息
+- 局部变量表: 容量以变量槽(variable slot)为最小单位, 第0位的Slot默认用于传递方法所属对象实例的引用(this)，同时为了节省栈帧空间Slot是可以重用的，当前字节码PC计数器的值已经超出某个变量作用域，那么这个变量的Slot就可以交给其他变量使用
+- 操作数栈(operand stack): 概念模型中栈帧作为虚拟机栈的元素是相互独立的，在具体实现中下面的栈帧操作数栈与上方的栈帧局部变量表多存在部分重叠的共享区域
+- 方法返回地址: 方法开始执行后有两种方式退出，一是执行引擎遇到任意一个方法返回的字节码指令,二是JVM内部异常/`athrow`字节码指令产生的异常未在方法的异常表中搜索到匹配的异常处理器.前者被称为正常完成出口(Normal Method Invocation Completion)，后者被称为异常完成出口(Abrupt Method Invocation Completion)。无论哪种退出方式，在方法退出后都需要返回到方法被调用的位置程序才能继续运行
+- 方法调用: 方法调用阶段唯一的任务就是确定被调用方法的版本
+- 解析: 方法调用的目标方法在Class文件中都是一个常量池中的符号引用, 在类加载解析阶段会将其中一部分符号引用转化为直接引用,这类方法的调用被称为解析(resolution)
+- 静态分派(Method Overload Resolution): `Human man = new Man();`, `Human`被称为变量的静态类型或外观类型(apparent type), 最终的类型在编译阶段可知；`Man`被称为变量的实际类型(actual type), 最终类型在运行期才能确定。虚拟机在重载时通过参数的静态类型作为判定依据
+- 动态分派: JVM如何根据实际类型分派方法执行版本?
+- `invokevirtual`指令的运行时解析过程: 找到操作数栈顶的第一个元素指向对象的实际类型C, 若C中找到与常量中描述符和简单名称都相符的方法，则进行权限校验，通过则返回该方法的直接引用，否则返回`java.lang.IllegalAccessError`; 若没找到则按照继承关系依次对C的父类进行搜索和校验，若仍未找到则返回`java.lang.AbstractMethodError`
+- 编译过程: 程序源码->词法分析->单词流->语法分析->AST->指令流->解释器->解释执行 / 程序源码->词法分析->单词流->语法分析->AST->优化器 -> 中间代码 -> 生成器 -> 目标代码
+- Java编译器输出的指令流基本上是一种基于栈的指令集架构(Instruction Set Architecture, ISA)，指令流中的指令大部分都是零地址指令，依赖于操作数栈工作
+
+```java
+// Slot复用对GC的影响
+public static voide main(String[] args) {
+  { byte[] placeholder = new byte[64 * 1024 * 1024]; }
+  // int a = 0;
+  System.gc(); // placeholder占用的Slot未被其他变量复用, 局部变量表仍保持对它的关联
+}
+```
+
+```java
+// 静态分派
+public class StaticDispatch {
+  static abstract class Human {}
+  static class Man extends Human {}
+
+  public void sayHi(Human guy) { System.out.println("hi, guy"); }
+  public void sayHi(Man guy) { System.out.println("hi, man"); }
+
+  public static void main(String[] args) {
+    Human human = new Man();
+    Man man = new Man();
+    StaticDispatch s = new StaticDispatch();
+    s.sayHi(human);
+    s.sayHi(man);
+  }
+}
+// 动态分派
+public class DynamicDispatch {
+  static abstract class Human {
+    protected abstract void sayHi();
+  }
+
+  static class Man extends Human {
+    @Override
+    protected void sayHi() {
+      System.out.println("hi, man");
+    }
+  }
+
+  static class IronMan extends Man {
+    @Override
+    protected void sayHi() {
+      System.out.println("hi, hero");
+    }
+  }
+
+  public static void main(String[] args) {
+    Human man = new Man(); // new -> dup -> invokespecial -> astore_1
+    man.sayHi(); // aload_1(将对象的引用压入栈顶，被称为接受者Receiver) -> invokevirtual
+    man = new IronMan();
+    man.sayHi();
+  }
+}
+```
+
+```java
+public int calc() {
+  int a = 100; // bipush 100(将单字节整型常量推入操作数栈顶) -> istore_1(操作数栈顶整型值出栈并存放到第一个局部变量Slot中)
+  int b = 200; // sipush 200 -> istore_2
+  int c = 300; // sipush 300 -> istore_3
+  return (a + b) * c; // iload_1 -> iload_2 -> iadd -> iload_3 -> imul -> ireturn
+}
+```
