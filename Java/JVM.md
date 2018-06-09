@@ -147,3 +147,17 @@ public int calc() {
   return (a + b) * c; // iload_1 -> iload_2 -> iadd -> iload_3 -> imul -> ireturn
 }
 ```
+
+## 类加载机制
+- 生命周期: 加载(loading)，连接(linking)[验证(verification)，准备(preparation)，解析(resolution)]，初始化(initialization)，使用(using)，卸载(unloading)
+- 类的立即初始化: 遇到`new`, `getstatic`, `pubstatic`, `invokestatic`这4条字节码指令时, 使用`java.lang.reflect`包的方法对类进行反射调用时，父类未初始化时，主类(包含main方法的类)未初始化时, `java.lang.invoke.MethodHandle`实例的解析结果为`REF_getStatic`/
+`REF_putStatic`/`REF_invokeStatic`,且这个方法句柄对应的类未初始化时
+- 加载: 通过类的全限定名获取定义此类的二进制字节流->将该字节流所代表的静态结构转化为方法区的运行时数据结构->在内存中生成一个代表该类的`java.lang.Class`对象，作为方法区该类各种数据的访问入口
+- 验证: 文件格式验证，元数据验证(类是否存在父类，类的父类是否继承了不允许被继承的类)，字节码验证(类型转换是否合法，确保跳转指令不会跳转到方法体外的字节码指令上)，符号引用验证(符号引用中通过字符串描述的全限定名是否能找到对应的类)
+- 准备: 为类变量(被`static`修饰的对象)分配内存并设置其初始值(数据类型的零值/类字段的字段属性表中的ConstantValue属性)，例如`public static int val = 123`初始值为0, `public static final int val = 123`的初始值为123
+- 解析: 将常量池中的符号引用替换为直接引用的过程
+- 初始化: 执行类构造器<clinit>方法的过程, <clinit>由编译器自动收集类中所有类变量的赋值动作和静态语句块(static {})中
+的语句合并而成; <clinit>和<init>不同，不需要显示调用父类构造器(第一个执行的<clinit>的类肯定是`java.lang.Object`)
+- 类加载器: 自定义类加载器 + 自定义类加载器 -> 应用程序类加载器(Application ClassLoader) -> 拓展类加载器(Extension ClassLoader) -> 启动类加载器(Bootstrap ClassLoader), 这种类加载器之间的层次关系被称为双亲委派模型(parents delegation model)。类加载器收到类加载的请求后将该请求委托给父类加载器完成，所有加载请求最终都应传递到顶层的启动类加载器。当父加载器无法完成该加载请求时(搜索范围中未找到所需的类),子加载器才会尝试自己加载
+- 线程上下文加载器(Thread Context ClassLoader): 若创建线程时未调用`java.lang.Thread`类的`setContextClassLoader`设置类加载器，将从父线程继承一个。若应用程序全局范围都未设置，类加载器默认为应用程序类加载器
+- OSGi: 将以`java.*`开头的类委托给父类加载器->将委派列表名单中的类委托给父类加载器->将Import列表中的类委托给Export类的Bundle类加载器->当前Bundle的ClassPath对应的类加载器->Fragement Bundle的类加载器->Dynamic Import列表的Bundle类加载器
