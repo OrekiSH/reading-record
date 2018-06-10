@@ -161,3 +161,51 @@ public int calc() {
 - 类加载器: 自定义类加载器 + 自定义类加载器 -> 应用程序类加载器(Application ClassLoader) -> 拓展类加载器(Extension ClassLoader) -> 启动类加载器(Bootstrap ClassLoader), 这种类加载器之间的层次关系被称为双亲委派模型(parents delegation model)。类加载器收到类加载的请求后将该请求委托给父类加载器完成，所有加载请求最终都应传递到顶层的启动类加载器。当父加载器无法完成该加载请求时(搜索范围中未找到所需的类),子加载器才会尝试自己加载
 - 线程上下文加载器(Thread Context ClassLoader): 若创建线程时未调用`java.lang.Thread`类的`setContextClassLoader`设置类加载器，将从父线程继承一个。若应用程序全局范围都未设置，类加载器默认为应用程序类加载器
 - OSGi: 将以`java.*`开头的类委托给父类加载器->将委派列表名单中的类委托给父类加载器->将Import列表中的类委托给Export类的Bundle类加载器->当前Bundle的ClassPath对应的类加载器->Fragement Bundle的类加载器->Dynamic Import列表的Bundle类加载器
+  
+## JIT
+- 解释器与编译器: 当程序需要迅速启动和执行时，解释器可以省去编译的时间;程序运行后，编译器可以节省程序运行环境的内存资源
+- 分层编译(tiered compilation): 第0层程序解释执行，解释器不开启性能监控; 第1层将字节码编译为本地代码并进行简单可靠的优化，第2层将字节码编译为本地代码并进行耗时较长的优化
+- Client Compiler(C1): 编译器的前端(平台无关)将字节码构造成一种高级中间代码表示(HIR),HIR使用静态单分配(SSA)的形式来表示代码值 -> 编译器的后端(平台相关)从HIR中生成低级中间代码表示(LIR) -> 编译器的后端使用线性扫描算法(Linear Scan Register Allocation)在LIR上分配寄存器, 并在LIR上做Peephole优化，最后生成机器码
+- Server Compiler(C2): 执行所有经典优化动作，如无用代码消除(dead code elimination), 循环展开(loop unrolling)等；实施一些与Java语言特性密切相关的优化，如范围检查消除(range check elimination)等; 根据解释器或C1提供的性能监控信息进行一些不稳定的优化，如守护内联(guarded inlining)等
+- JIT编译的热点代码包括被多次调用的方法与被多次执行的循环体。对于循环体而言，编译动作虽然是由循环体触发的，但编译器依然会以整个方法作为编译对象，这种编译方式由于编译发生在方法执行过程中而被称为栈上替换(On Stack Replacement, OSR)
+- 热点探测(Hot Spot Detection): 基于采样的热点探测与基于计数器的热点探测，对于前者JVM会周期性的检查各个线程的栈顶，经常出现于栈顶的方法便为热点方法，对于后者JVM会为每个方法甚至代码块设置计数器，统计方法的执行次数(Client模式下1500, Server模式下10000)
+- 公共子表达式消除(common subexpression elimination): 如果一个表达式E已经计算过了，且从先前的计算到当前语句，E中所有的变量值都未发生变化，E便为公共子表达式。例如`int d = ((c * b) * 12) + a + (a + (b * c))`就可被视为`int d = E * 12 + a + (a + E)`, 同时编译器可能会进行代数化简将表达式化为: `int d = E * 13 + a * 2`
+- 数组边界检查消除(array bounds checking elimination): 在编译期间根据数据流分析确定array.length的值
+- 逃逸分析(escape analysis): 分析对象的动态作用域，当一个对象在方法中被定义后被外部方法引用被称为方法逃逸(例如作为调用参数)，被外部线程访问则被称为线程逃逸(例如赋值给类变量)。若对象不会逃逸到方法或线程外，则可以进行栈上分配，同步消除，标量替换
+
+```java
+static class B {
+  int value;
+  final int get() { return value; }
+}
+
+public void foo() {
+  y = b.get();
+  z = b.get();
+  sum = y + z;
+}
+
+// 方法内联
+public void foo() {
+  y = b.value;
+  z = b.value;
+  sum = y + z;
+}
+// 公共子表达式消除
+public void foo() {
+  y = b.value;
+  z = y;
+  sum = y + z;
+}
+// 复写传播
+public void foo() {
+  y = b.value;
+  y = y;
+  sum = y + y;
+}
+// 无用代码消除
+public void foo() {
+  y = b.value;
+  sum = y + y;
+}
+```
