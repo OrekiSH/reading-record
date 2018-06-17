@@ -11,3 +11,37 @@
 - Linux内核并没有定义特别的调度算法或是数据结构表征线程, 线程仅被视为一个与其他进程共享某些资源的进程。线程的创建也与进程类似，不过在调用`clone`时需要传递一些参数标志来表明需要共享的资源
 - 内核线程: 由`kthreadd`内核进程创建, 没有独立地址空间, 独立运行在内核空间的进程
 - `do_exit`: 将`task_struct`中的标志成员设为`PF_EXITING` -> 调用`del_timer_sync`删除任一内核定时器 -> 调用`exit_mm`释放进程占用的`mm_struct` -> 调用`sem__exit` -> 调用`exit_files`和`exit_fs`递减文件描述符和文件系统数据的引用计数 -> 将`task_struct`中的`exit_code`设置为`exit`提供的退出代码 -> 调用`exit_notify`向父进程发送信号，在当前线程组内寻找一个新的父进程, 并将进程状态设置为`EXIT_ZOMBIE` -> 调用`schedule`切换到新的进程
+
+## 进程调度
+- Linux提供了抢占式多任务(preemptive multitasking)的模式，调度程序负责决定那个进程投入运行，何时运行以及运行多少时间。强制进程挂起的动作被称为抢占(preemption)，进程主动挂起的动作被称为让步(yielding), 进程在被抢占之前能够运行的时间被称为时间片(timeslice)
+- Linux为了保证交互式应用和桌面系统的性能，相比于CPU消耗型进程更倾向于优先调度I/O消耗型进程
+- 进程优先级: nice值(-20到19, 值越大优先级越低，默认值为0)和实时优先级(0到99, 实时进程的优先级都高于普通进程)
+- Unix的进程调度的缺陷: 将nice值映射到时间片引发否固定切换频率给公平性造成了很大的变数
+- 时间记账
+- 进程选择
+- 调度器入口 
+- 睡眠和唤醒
+- 上下文切换: `schedule`调用`context_switch`将虚拟内存和处理器状态(保存、恢复栈信息和寄存器信息)从一个可执行进程切换到另一个可执行线程
+
+```c
+struct sched_entity {
+  struct load_weight load;
+  struct rb_node run_node;
+  struct list_head group_node;
+  unsigned int on_rq;
+  u64 exec_start;
+  u64 sum_exec_runtime;
+  u64 vruntime;
+  u64 prev_sum_exec_runtime;
+  u64 last_wakeup;
+  u64 avg_overlap;
+  u64 nr_migrations;
+  u64 start_runtime;
+  u64 avg_wakeup;
+}
+```
+
+## 系统调用
+- 系统调用的作用: 作为用户空间进程和硬件设备之间的中间层，为用户空间提供了硬件的抽象接口, 保证了系统的稳定和安全
+- Linux的系统调用和大多数Unix系统一样，作为C库的一部分提供
+- 系统调用号一旦分配就不能再有变更，被删除后也不会被回收利用
