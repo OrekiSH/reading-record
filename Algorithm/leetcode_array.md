@@ -5,12 +5,13 @@
 |119|[Pascal's Triangle II](https://leetcode.com/problems/pascals-triangle-ii/description/)|
 |121|[Best Time to Buy and Sell Stock](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/description/)|
 |16|[3Sum Closest](https://leetcode.com/problems/3sum-closest/description/)|
+|120|[Triangle](https://leetcode.com/problems/triangle/description/)|
 
 ## easy
 
 #### Pascal's Triangle
 ```js
-function pascalTriangle (n) {
+function pascalTriangle(n) {
   const result = [[], [[1]]];
   if (n < 2) {
     return result[n];
@@ -29,7 +30,7 @@ function pascalTriangle (n) {
 
 #### Pascal's Triangle II
 ```js
-function pascalTriangleII (n) {
+function pascalTriangleII(n) {
   if (n < 1) return [[1]][n];
 
   let last = [1];
@@ -49,7 +50,7 @@ function pascalTriangleII (n) {
 #### Best Time to Buy and Sell Stock
 ```js
 // Best Time to Buy and Sell Stock
-function maxProfit (prices) {
+function maxProfit(prices) {
   if (!Array.isArray(prices) || prices.length === 0) return 0;
 
   let max = 0;
@@ -67,24 +68,45 @@ function maxProfit (prices) {
 
 #### 3Sum Closest
 ```js
-function threeSumClosest (nums, target) {
-  nums = nums.sort((a, b) => a - b);
-  let res = nums[0] + nums[1] + nums[2];
+function threeSumClosest(nums, target) {
+  const n = nums.length;
+  if (n < 3) return 0;
 
-  for (let i = 0; i < nums.length - 2; i++) {
-    let j = i + 1;
-    let k = nums.length - 1;
+  const closest = nums[0] + nums[1] + nums[2];
+  nums.sort((a, b) => a - b);
 
-    while (j < k) {
-      let num = nums[i] + nums[j] + nums[k];
+  for (let first = 0; first < n - 2; first++) {
+    let second = first + 1;
+    let third = n - 1;
 
-      if (Math.abs(num - target) < Math.abs(res - target)) res = num;
+    while (second < third) {
+      const num = nums[first] + nums[second] + nums[third];
 
-      if (num < target) j += 1;
-      else k -= 1;
+      if (num === target) return num;
+
+      if (Math.abs(num - target) < Math.abs(closest - target)) closest = num;
+
+      if (num < target) second += 1;
+      else third -= 1;
     }
   }
 
-  return res;
+  return closest;
 };
+```
+
+#### Triangle
+```js
+function minimumTotal(triangle) {
+  const n = triangle.length;
+  let minlen = triangle[n - 1];
+
+  for(let layer = n - 2; layer >= 0; layer--) {
+    for(let i = 0; i <= layer; i++) {
+      minlen[i] = Math.min(minlen[i], minlen[i + 1]) + triangle[layer][i];
+    }
+  }
+
+  return minlen[0];
+}
 ```
