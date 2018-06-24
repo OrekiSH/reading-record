@@ -52,6 +52,7 @@ struct sched_entity {
 - 中断处理被分为上半部(top half)和下半部(bottom half)，上半部即中断处理程序(有严格时限)，允许稍后完成的工作会被推迟到下半部。例如网卡收到来自网络的数据包时，向内核发送中断信号，内核则通过执行网卡注册的中断处理程序做出应答: 通知硬件拷贝最新的网络数据包到内存然后读取网卡更多的数据包，这些操作被归为中断处理的上半部; 而处理和操作数据包的其他工作被归为下半部。
 - 硬件 -> 中断控制器 -> CPU -> CPU中断内核 -> `do_IRQ()` -> 该线上有中断处理程序 -> `handle_IRQ_event()` -> 在该线上运行所有中断处理程序 -> `ret_from_intr()` -> 返回内核运行中断的代码
 - 硬件 -> 中断控制器 -> CPU -> CPU中断内核 -> `do_IRQ()` -> 该线上没有中断处理程序 -> `ret_from_intr()` -> 返回内核运行中断的代码
+- `watch -n1 "cat /proc/interrupts"`
 
 ```c
 // 注册中断处理程序(<linux/interrupt.h>)
@@ -66,5 +67,53 @@ int request_irq(
   unsigned long flags,
   const char *name,
   void *dev, // 提供共享中断线的唯一标识
+)
+```
+
+## 内存管理
+- 内核将物理页作为内存管理的基本单位，尽管CPU的最小寻址单位通常为字/字节, 内存管理单元(MMU)通常以页为单位管理系统中的页表
+- 由于硬件的限制(只能用某些特定内存地址执行DMA, 物理寻址范围远大于虚拟寻址范围), 内核将具有相似特性的页划分为不同的区(zone)
+- `ZONE_DMA`, `ZONE_DMA32`, `ZONE_NORMAL`(能够正常映射的页), `ZONE_HIGHEM`(高端内存)
+- 内核操作中通常使用空闲链表来进行数据的分配和回收，而空闲链表的问题在于无法全局控制(内核无法知道有那些空闲链表), 因此需要引入一层通用数据结构缓存层,slab层(或者叫slab分配器)
+- 每个进程都有1到2页的内核栈(32位和64位的页大小分别为4kb和8kb)
+- 高端内存中的页不能永久映射到内核地址空间上，因此通过`alloc_pages`以`__GFP_HIGHMEM`标志获得的也不可能有逻辑地址
+
+```c
+// 系统物理页, <linux/mm_types.h>
+struct page {
+  unsigned long flags;
+  atomic_t _count; // 页的引用计数, 计数值为-1时表示内核未引用该页。然而内核代码不应直接检查_count的值，而应该调用page_count函数
+  atomic_t _mapcount;
+  unsigned long private;
+  struct address_space *mapping;
+  pgoff_t index;
+  struct list_head lru;
+  void *virtual; // 页的虚拟地址
+}
+```
+
+```c
+struct slab {
+  struct list_head list;
+  unsigned long colouroff;
+  void *s_men; // slab中的第一个对象
+  unsigned int inuse; // slab中已分配的对象数
+  kmem_bufctl_t free; // 第一个空闲对象
+}
+```
+
+```c
+struct kmem_cache * kmem_cache_create(
+  const char *name,
+  size_t size, // 高速缓存中每个元素的大小
+  size_t align, // slab中第一个对象的偏移量, 0即标准对齐
+  
+  // SLAB_HWCAHE_ALIGN: slab内所有对象按照高速缓存行对齐
+  // SLAB_POISON: slab按照a5a5a5a5填充slab
+  // SLAB_RED_ZONE: slab在已分配内存周围插入"红色警戒区"以探测缓冲越界
+  // SLAB_PANIC: 分配失败时通知slab层
+  // SLAB_CACHE_DMA: slab层使用可以执行DMA的内存进行分配
+  unsigned long flags,
+  void (*ctor)(void *),
 )
 ```
