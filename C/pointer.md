@@ -9,6 +9,9 @@
 - 链接属性: external(位于不同源文件的声明被当做同一实体), internal(同一源文件中声明被当做同一实体), none(声明被当做不同的实体)
 - 声明的链接属性为external时, 在其前面加上`static`关键字可以将其链接属性变为internal
 - 变量的存储类型(storage class)指的是存储变量值的内存类型。代码块之外声明的变量或代码块内声明但被加上`static`关键字的变量都被存储在静态内存中，被称为静态变量，在程序运行之前创建，在程序执行期间始终存在; 代码块内声明的非`static`变量都被存储在堆栈内存中，被称为自动变量，当程序运行到声明变量的代码块时创建；代码块内声明的`register`变量部分被存储在硬件寄存器中，被称为寄存器变量
+- 为了存储更大的值，我们将两个以上的字节合为一个更大的内存单位--字, 尽管一个字包含4个字节，但它仍然只有一个地址(最左/右边的字节位置)
+- 若使用整型算术指令，比特序列将被解释为整数，浮点型指令同理
+- 指针的指针: `int a = 1; int *b = &a; int **c = &b;`
 
 ```c
 // b, c, f链接属性为external
@@ -37,5 +40,26 @@ int func() {
   int j;
   extern int k; // external
   extern int i; // internal
+}
+```
+```c
+char ch = 'a';
+char *cp = &ch;
+*cp + 1
+*(cp + 1)
+++cp
+cp++
+*++cp
+*cp++
+++*cp
+(*cp)++
+++*++cp
+
+size_t strlen(char *string) {
+  int length = 0;
+  while(*string++ != '\0') {
+    length += 1;
+  }
+  return length;
 }
 ```
