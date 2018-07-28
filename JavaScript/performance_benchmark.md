@@ -87,3 +87,17 @@ Number       (725,194,761)
 parseFloat    (19,011,356)
 parseInt      (15,761,237)
 ```
+
+## String to Number
+```js
+// Chrome 68.0.3440.75
+'' + num        (594,509,015)
+String(num)     (110,114,193)
+num.toString()   (55,379,822)
+new String(num)  (18,274,764)
+// Firefox 61.0.1
+'' + num        (640,832,397)
+new String(num)  (60,335,509)
+String(num)      (36,538,554)
+num.toString()   (35,419,064)
+```
