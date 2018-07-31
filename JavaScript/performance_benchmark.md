@@ -101,3 +101,46 @@ new String(num)  (60,335,509)
 String(num)      (36,538,554)
 num.toString()   (35,419,064)
 ```
+
+## preallocating Array
+```js
+// Chrome 68.0.3440.75
+[];length = 10000;  (46,511)
+new Array(10000);   (45,409)
+[];                 (16,429)
+// Firefox 61.0.1
+new Array(10000);   (21,404)
+[];length = 10000;  (18,554)
+[];                 (12,671)
+
+
+// Chrome 68.0.3440.75
+new Array(100);     (4,187,720)
+[];                 (1,548,981)
+// Firefox 61.0.1
+new Array(100);     (3,198,882)
+[];                 (1,706,934)
+```
+
+## indexOf vs TripleEqual
+```js
+// Chrome 58.0.3029
+Searching an array with indexOf               (114,763,824)
+Searching array for a value with a for loop    (84,495,478)
+
+// Chrome 68.0.3440.75
+Searching array for a value with a for loop    (81,001,186)
+Searching an array with indexOf                (58,772,812)
+
+// Firefox 55.0
+Searching array for a value with a for loop   (107,444,623)
+Searching an array with indexOf                (62,336,421)
+
+// Firefox 61.0.1
+Searching an array with indexOf                (72,531,837)
+Searching array for a value with a for loop    (71,648,889)
+
+// IE 11
+Searching array for a value with a for loop    (48,557,015)
+Searching an array with indexOf                 (5,823,535)
+```
