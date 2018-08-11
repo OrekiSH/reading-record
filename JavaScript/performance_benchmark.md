@@ -144,3 +144,21 @@ Searching array for a value with a for loop    (71,648,889)
 Searching array for a value with a for loop    (48,557,015)
 Searching an array with indexOf                 (5,823,535)
 ```
+
+## copy array slice-vs-concat
+```js
+// Chrome 68.0.3440.75
+slice     (64,760)
+concat    (39,989)
+[].concat (39,267)
+
+// Chrome 63.0.3239
+[].concat (36,171)
+slice     (33,742)
+concat    (32,407)
+
+// Firefox 61.0.1
+slice     (19,277)
+concat     (9,943)
+[].concat  (8,362)
+```
