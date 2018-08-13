@@ -162,3 +162,26 @@ slice     (19,277)
 concat     (9,943)
 [].concat  (8,362)
 ```
+
+## new array (new Array()) vs literal array ([])
+```js
+// n = 500000; arr[i] = i;
+
+// Chrome 68.0.3440.75
+new Array(length)           (590)
+literal array with length   (585)
+new Array                   (150)
+literal array               (142)
+
+// Firefox 61.0.1
+new Array                   (412)
+literal array with length   (402)
+literal array               (401)
+new Array(length)           (375)
+
+// Safari 11.0.2 
+new Array(length)          (1,408)
+literal array                (526)
+new Array                    (482)
+literal array with length    (314)
+```
